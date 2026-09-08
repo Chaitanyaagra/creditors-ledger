@@ -1,0 +1,1260 @@
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0F2E38">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Creditors">
+<title>Creditors Ledger</title>
+
+<style>
+  :root{
+    --deep:#0F2E38; --deep-2:#17454F;
+    --surface:#EFF3F2; --card:#FFF;
+    --rule:#DAE3E2; --rule-2:#A9BCBB;
+    --ink:#12262E; --soft:#5A7077;
+    --due:#A82C22; --due-bg:#FBECEA;
+    --adv:#1D6E52; --adv-bg:#E7F3EE;
+    --gold:#DFA13C; --gold-2:#B57A1C;
+    --b1:#2E7D64; --b2:#DFA13C; --b3:#D2702A; --b4:#A82C22;
+    --serif:Georgia,'Iowan Old Style','Times New Roman',serif;
+    --sans:system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  body{margin:0}
+  .app{font-family:var(--sans);color:var(--ink);background:var(--surface);
+    font-variant-numeric:tabular-nums;line-height:1.45;min-height:100vh;padding-bottom:64px}
+  .app :focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+
+  .mast{background:linear-gradient(158deg,var(--deep),var(--deep-2));color:#EAF2F1;
+    padding-top:env(safe-area-inset-top)}
+  .mi{max-width:1180px;margin:0 auto;padding:22px 20px 16px;display:flex;flex-wrap:wrap;
+    gap:16px 26px;align-items:flex-end;justify-content:space-between}
+  .mast h1{font-family:var(--serif);font-weight:400;font-size:29px;line-height:1.1;margin:0 0 4px;color:#FFF}
+  .mast h1 .m{color:var(--gold)}
+  .mast .sub{font-size:12.5px;color:#9FB8BB;margin:0}
+  .ctrls{display:flex;align-items:flex-end;gap:11px;flex-wrap:wrap}
+  .fld label{display:block;font-size:11.5px;color:var(--soft);margin-bottom:4px}
+  .mast .fld label{color:#9FB8BB}
+  .mast select,.mast input[type=date]{font:inherit;font-size:14.5px;color:#FFF;
+    background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.24);
+    border-bottom:2px solid var(--gold);padding:7px 10px;border-radius:3px}
+  .mast select option{color:var(--ink);background:#FFF}
+  .tabs{max-width:1180px;margin:0 auto;padding:0 20px;display:flex;gap:3px;flex-wrap:wrap}
+  .tab{font:inherit;font-size:14px;color:#A8C0C2;background:none;border:0;
+    border-bottom:3px solid transparent;padding:10px 14px 11px;cursor:pointer}
+  .tab:hover{color:#FFF}
+  .tab[aria-selected=true]{color:#FFF;font-weight:600;border-bottom-color:var(--gold)}
+
+  .pane{max-width:1180px;margin:0 auto;padding:24px 20px 0}
+  .pane[hidden]{display:none}
+  .note{font-size:13.5px;color:var(--soft);max-width:76ch;margin:0 0 14px}
+  .flag{border-left:3px solid var(--gold);background:#FDF6E8;color:#5B4212;padding:10px 14px;
+    font-size:13.5px;margin:0 0 18px;max-width:82ch;border-radius:0 3px 3px 0}
+  .flag b{font-weight:600}
+  .flag.bad{border-color:var(--due);background:var(--due-bg);color:#6E211A}
+  .empty{border:1px dashed var(--rule-2);padding:26px;text-align:center;color:var(--soft);font-size:14px;border-radius:3px}
+
+  /* aging strip */
+  .aging{background:var(--card);border:1px solid var(--rule);border-radius:4px;
+    padding:15px 17px;margin:0 0 20px;box-shadow:0 1px 2px rgba(15,46,56,.06)}
+  .aging .hd{display:flex;justify-content:space-between;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:11px}
+  .aging .big{font-family:var(--serif);font-size:27px;color:var(--due)}
+  .aging .big.ok{color:var(--adv)}
+  .aging .lbl{font-size:12px;color:var(--soft)}
+  .bar{display:flex;height:11px;border-radius:6px;overflow:hidden;background:#E8EEED}
+  .bar span{display:block}
+  .keys{display:flex;flex-wrap:wrap;gap:8px 20px;margin-top:11px;font-size:12.5px}
+  .keys i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:baseline}
+  .keys b{font-weight:600;margin-left:5px}
+
+  .card{background:var(--card);border:1px solid var(--rule);border-radius:4px;
+    box-shadow:0 1px 2px rgba(15,46,56,.06);overflow:hidden;margin-bottom:18px}
+  .wide{overflow-x:auto}
+  .wide table{min-width:860px}
+  table{border-collapse:collapse;width:100%;font-size:14.5px}
+  caption{font-family:var(--serif);font-size:18.5px;text-align:left;padding:13px 16px 11px;
+    border-bottom:1px solid var(--rule);background:var(--card)}
+  th,td{padding:9px 12px}
+  thead th{font-size:11.5px;font-weight:600;color:var(--soft);background:#F4F8F7;
+    border-bottom:1px solid var(--rule-2);text-align:right;white-space:nowrap}
+  thead th:first-child{text-align:left}
+  tbody tr{border-bottom:1px solid var(--rule)}
+  tbody tr:nth-child(even){background:#FAFCFC}
+  tbody td{text-align:right}
+  tbody th{text-align:left;font-weight:500;white-space:nowrap}
+  .party{font-family:var(--serif);font-size:16px}
+  .plink{background:none;border:0;font:inherit;font-family:var(--serif);font-size:16px;
+    color:var(--deep);cursor:pointer;padding:0;text-align:left;border-bottom:1px dotted var(--rule-2)}
+  .plink:hover{color:var(--gold-2)}
+  tr.sum{background:#F4F8F7!important;border-bottom:0}
+  tr.sum th,tr.sum td{border-top:2px solid var(--deep);font-weight:600}
+  .due{color:var(--due)} .adv{color:var(--adv)} .soft2{color:var(--soft)} .zero{color:#B5C3C3}
+  .pill{display:inline-block;padding:2px 9px;border-radius:11px;font-weight:600;font-size:13.5px}
+  .pill.due{background:var(--due-bg)} .pill.adv{background:var(--adv-bg)}
+  .tag{display:inline-block;padding:1px 7px;border-radius:9px;font-size:11.5px;font-weight:600}
+  .tag.o1{background:#E7F3EE;color:var(--b1)} .tag.o2{background:#FBF2DF;color:#8A5D0F}
+  .tag.o3{background:#FBEDE2;color:#9C4E15} .tag.o4{background:var(--due-bg);color:var(--due)}
+  .addcol{background:#FBF6EC} .cutcol{background:#EDF3F4}
+  tbody tr:nth-child(even) .addcol{background:#F7F1E4}
+  tbody tr:nth-child(even) .cutcol{background:#E8EFF0}
+  .edge{border-left:1px solid var(--rule-2)}
+
+  .ctl{display:flex;flex-wrap:wrap;gap:11px;align-items:flex-end;margin-bottom:16px}
+  input[type=date],input[type=month],input[type=text],input[type=number],select,textarea{
+    font:inherit;font-size:14px;color:var(--ink);background:var(--card);
+    border:1px solid var(--rule-2);padding:7px 10px;border-radius:3px}
+  .seg{display:inline-flex;border:1px solid var(--rule-2);border-radius:3px;overflow:hidden;background:var(--card)}
+  .seg button{font:inherit;font-size:14px;padding:7px 14px;cursor:pointer;background:transparent;border:0;color:var(--soft)}
+  .seg button+button{border-left:1px solid var(--rule)}
+  .seg button[aria-pressed=true]{background:var(--deep);color:#FFF;font-weight:600}
+
+  .scroll{overflow-x:auto;border:1px solid var(--rule);border-radius:4px;background:var(--card);
+    box-shadow:0 1px 2px rgba(15,46,56,.06)}
+  .grid{font-size:13px;min-width:960px;border-collapse:collapse}
+  .grid th,.grid td{border:1px solid var(--rule);padding:0;text-align:right}
+  .grid thead th{padding:7px 4px;font-size:11px;background:#F0F5F5;color:var(--soft);
+    border-bottom:1px solid var(--rule-2);text-align:center;font-weight:600}
+  .grid thead th:first-child{background:var(--deep);color:#FFF;font-family:var(--serif);font-size:14px;padding:7px 12px;text-align:left}
+  .grid thead th.sun{color:var(--due)}
+  .grid tbody th{padding:6px 12px;text-align:left;background:var(--card);position:sticky;left:0;z-index:1;
+    font-family:var(--serif);font-size:14.5px;white-space:nowrap;border-right:1px solid var(--rule-2)}
+  .grid td.tot,.grid th.tot{background:#F4F8F7;font-weight:600;padding:6px 10px}
+  .grid tr.dt th,.grid tr.dt td{background:#F0F5F5;font-weight:600;border-top:2px solid var(--deep);padding:6px 8px}
+  .grid input{width:100%;border:0;background:transparent;padding:6px 7px;font:inherit;font-size:13px;
+    text-align:right;color:var(--ink);font-variant-numeric:tabular-nums}
+  .grid input:focus{background:#FCF3E1;outline:2px solid var(--gold);outline-offset:-2px}
+  .grid input.filled{font-weight:600}
+  .grid td.today{box-shadow:inset 0 0 0 2px var(--gold)}
+  .multi{width:100%;border:0;background:#FBF2DF;padding:6px 7px;font:inherit;font-size:12.5px;
+    text-align:right;color:#8A5D0F;cursor:pointer;font-weight:600}
+
+  .btn{font:inherit;font-size:14px;padding:8px 15px;cursor:pointer;background:var(--deep);
+    color:#FFF;border:1px solid var(--deep);border-radius:3px}
+  .btn.ghost{background:transparent;color:var(--ink);border-color:var(--rule-2)}
+  .mast .btn.ghost{color:#EAF2F1;border-color:rgba(255,255,255,.3)}
+  .btn.gold{background:var(--gold-2);border-color:var(--gold-2);color:#FFF}
+  .btn.warn{background:transparent;color:var(--due);border-color:var(--due)}
+  .btn.small{font-size:12.5px;padding:4px 10px}
+  .btn:hover{filter:brightness(1.13)}
+  .btn.ghost:hover{background:rgba(15,46,56,.05);filter:none}
+
+  .status{font-size:12.5px;margin-left:8px;display:inline-flex;align-items:center;gap:7px}
+  .status .dot{width:8px;height:8px;border-radius:50%;background:#B5C3C3;display:inline-block}
+  .status.saving .dot{background:var(--gold)} .status.saving{color:var(--gold-2)}
+  .status.saved .dot{background:var(--adv)} .status.saved{color:var(--adv)}
+  .status.failed .dot{background:var(--due)} .status.failed{color:var(--due)}
+
+  h2.sec{font-family:var(--serif);font-size:19.5px;font-weight:400;margin:28px 0 10px}
+  h2.sec:first-child{margin-top:0}
+  .form{background:var(--card);border:1px solid var(--rule);border-radius:4px;padding:15px 17px;
+    margin-bottom:14px;display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap}
+  .form input[type=text]{width:150px} .form input[type=number]{width:150px;text-align:right}
+  .form select{min-width:130px}
+  .actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0 8px}
+  .msg{font-size:13px;color:var(--soft);margin:0 0 14px;min-height:1.2em}
+  .msg.err{color:var(--due)} .msg.ok{color:var(--adv)}
+
+  @media(max-width:640px){
+    .mi{padding:18px 14px 14px} .mast h1{font-size:23px}
+    .tabs{padding:0 14px} .tab{padding:10px 10px 11px;font-size:13.5px}
+    .pane{padding:20px 14px 0} table{font-size:13.5px} th,td{padding:8px 8px}
+    .aging .big{font-size:23px}
+  }
+
+  /* sign in */
+  .gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
+    padding:24px;background:linear-gradient(158deg,var(--deep),var(--deep-2));font-family:var(--sans)}
+  .gate .box{background:var(--card);border-radius:6px;padding:30px 30px 26px;width:100%;max-width:360px;
+    box-shadow:0 18px 44px rgba(0,0,0,.3)}
+  .gate h2{font-family:var(--serif);font-weight:400;font-size:25px;margin:0 0 4px}
+  .gate p.lead{font-size:13px;color:var(--soft);margin:0 0 20px}
+  .gate label{display:block;font-size:11.5px;color:var(--soft);margin-bottom:5px}
+  .gate input{width:100%;font-size:19px;padding:10px 12px;letter-spacing:.32em;text-align:center;
+    border:1px solid var(--rule-2);border-radius:3px;background:#FBFDFD;font-family:var(--sans)}
+  .gate .btn{width:100%;margin-top:14px;padding:11px;font-size:15px}
+  .gate .m{font-size:13px;margin:12px 0 0;min-height:1.2em;text-align:center;color:var(--due)}
+  .gate .hint{font-size:12.5px;color:var(--soft);margin:16px 0 0;padding-top:14px;
+    border-top:1px solid var(--rule);line-height:1.5}
+  .app{display:none}
+  .app.on{display:block}
+  .who{display:flex;align-items:center;gap:9px;font-size:12.5px;color:#9FB8BB}
+  .who .chip{background:rgba(223,161,60,.2);color:var(--gold);padding:2px 9px;border-radius:10px;font-weight:600}
+</style>
+
+<div class="gate" id="gate">
+  <div class="box">
+    <h2>Creditors Ledger</h2>
+    <p class="lead">Enter your PIN to continue.</p>
+    <label for="pin">PIN</label>
+    <input type="password" id="pin" inputmode="numeric" autocomplete="off" maxlength="12">
+    <button class="btn" id="signIn">Sign in</button>
+    <p class="m" id="gateMsg"></p>
+    <p class="hint" id="gateHint" hidden></p>
+  </div>
+</div>
+
+<div class="app">
+<header class="mast">
+  <div class="mi">
+    <div>
+      <h1>Creditors <span class="m">Ledger</span></h1>
+      <p class="sub" id="sub">Suppliers you buy from &mdash; what you owe and how old it is</p>
+      <div class="who" id="who" style="margin-top:7px"></div>
+    </div>
+    <div class="ctrls">
+      <div class="fld"><label for="fy">Financial year</label><select id="fy"></select></div>
+      <div class="fld"><label for="ason">Balance as on</label><input type="date" id="ason"></div>
+      <button class="btn ghost" id="asonEnd">Year end</button>
+    </div>
+  </div>
+  <div class="tabs" role="tablist">
+    <button class="tab" role="tab" id="t-balance" aria-selected="true">Balance</button>
+    <button class="tab" role="tab" id="t-ledger" aria-selected="false">Party ledger</button>
+    <button class="tab" role="tab" id="t-register" aria-selected="false">Register</button>
+    <button class="tab" role="tab" id="t-daily" aria-selected="false">Daily</button>
+    <button class="tab" role="tab" id="t-parties" aria-selected="false">Parties</button>
+    <button class="tab" role="tab" id="t-data" aria-selected="false">Data</button>
+  </div>
+</header>
+
+<!-- BALANCE -->
+<section class="pane" id="p-balance" role="tabpanel">
+  <div id="lagFlag"></div>
+  <div class="aging" id="agingBox"></div>
+  <div class="card wide">
+    <table id="balTable">
+      <caption id="balCap">Balance</caption>
+      <thead><tr>
+        <th>Party</th><th>Opening</th>
+        <th class="addcol">Purchase</th><th class="addcol">Credit note</th>
+        <th class="cutcol edge">Payment</th><th class="cutcol">Debit note</th>
+        <th class="edge">You owe</th>
+        <th title="Age of the oldest bill still unpaid, oldest cleared first">Oldest unpaid</th>
+      </tr></thead>
+      <tbody id="balBody"></tbody>
+    </table>
+  </div>
+  <p class="note">
+    You owe = opening + purchase + credit note &minus; payment &minus; debit note.
+    Payments are applied to the oldest bill first, so &ldquo;oldest unpaid&rdquo; is the age of the
+    earliest bill still not fully cleared. Click a party name to open its ledger.
+  </p>
+</section>
+
+<!-- LEDGER -->
+<section class="pane" id="p-ledger" role="tabpanel" hidden>
+  <div class="ctl">
+    <div class="fld"><label for="ledParty">Party</label><select id="ledParty"></select></div>
+  </div>
+  <div class="form">
+    <div class="fld"><label for="txDate">Date</label><input type="date" id="txDate"></div>
+    <div class="fld"><label for="txType">Type</label><select id="txType">
+      <option value="purchase">Purchase</option><option value="credit">Credit note</option>
+      <option value="payment" selected>Payment</option><option value="debit">Debit note</option>
+    </select></div>
+    <div class="fld"><label for="txAmt">Amount</label><input type="number" id="txAmt" min="0" step="0.01" placeholder="0"></div>
+    <div class="fld"><label for="txRef">Bill / UTR no.</label><input type="text" id="txRef" placeholder="optional"></div>
+    <div class="fld"><label for="txNote">Remark</label><input type="text" id="txNote" placeholder="optional"></div>
+    <button class="btn gold" id="txAdd">Add entry</button>
+  </div>
+  <p class="msg" id="txMsg"></p>
+  <div id="ledHead"></div>
+  <div class="card wide"><table id="ledTable">
+    <caption id="ledCap">Ledger</caption>
+    <thead><tr><th>Date</th><th>Particulars</th><th>Bill / ref</th>
+      <th>Adds</th><th>Clears</th><th>Running balance</th><th>Status</th><th></th></tr></thead>
+    <tbody id="ledBody"></tbody>
+  </table></div>
+</section>
+
+<!-- REGISTER -->
+<section class="pane" id="p-register" role="tabpanel" hidden>
+  <div class="ctl">
+    <div class="fld"><label for="regMonth">Month</label><select id="regMonth"></select></div>
+    <div class="seg" role="group" aria-label="Record type" id="regSeg">
+      <button data-type="payment" aria-pressed="true">Payment</button>
+      <button data-type="debit" aria-pressed="false">Debit note</button>
+      <button data-type="purchase" aria-pressed="false">Purchase</button>
+      <button data-type="credit" aria-pressed="false">Credit note</button>
+    </div>
+    <span class="status" id="stat"><span class="dot"></span><span id="statTxt">Ready</span></span>
+    <button class="btn small ghost" id="retry" hidden>Retry save</button>
+  </div>
+  <div class="scroll"><table class="grid" id="regGrid"></table></div>
+  <p class="note">
+    Type an amount into a cell to add or change it; blank clears it. Amber cells hold more than one
+    entry for that day &mdash; click to open the ledger and edit them individually. Credit notes add
+    to what you owe, debit notes reduce it.
+  </p>
+</section>
+
+<!-- DAILY -->
+<section class="pane" id="p-daily" role="tabpanel" hidden>
+  <div class="ctl"><div class="fld"><label for="dayDate">Date</label><input type="date" id="dayDate"></div></div>
+  <div class="card wide"><table id="dayTable">
+    <caption id="dayCap">Activity</caption>
+    <thead><tr><th>Party</th><th class="addcol">Purchase</th><th class="addcol">Credit note</th>
+      <th class="cutcol edge">Payment</th><th class="cutcol">Debit note</th><th class="edge">Owed to date</th></tr></thead>
+    <tbody id="dayBody"></tbody>
+  </table></div>
+  <p class="note" id="dayNote"></p>
+</section>
+
+<!-- PARTIES -->
+<section class="pane" id="p-parties" role="tabpanel" hidden>
+  <h2 class="sec">Add a supplier</h2>
+  <div class="form">
+    <div class="fld"><label for="newName">Name</label><input type="text" id="newName" placeholder="e.g. RBRR"></div>
+    <div class="fld"><label for="newOp">Opening balance <span id="opFy"></span></label>
+      <input type="number" id="newOp" step="0.01" placeholder="0"></div>
+    <button class="btn" id="addParty">Add supplier</button>
+  </div>
+  <p class="msg" id="addMsg"></p>
+  <div class="card wide"><table>
+    <caption id="partiesCap">Suppliers</caption>
+    <thead><tr><th>Party</th><th id="opHead">Opening</th><th>Closing</th>
+      <th>Entries this year</th><th>Oldest unpaid</th><th></th></tr></thead>
+    <tbody id="partiesBody"></tbody>
+  </table></div>
+  <p class="note">
+    The opening balance belongs to the selected year only. It is treated as dated 1 April, so if it
+    carries older bills their real age is understated.
+  </p>
+  <div class="actions"><button class="btn ghost" id="carry">Carry closing balances into next year</button></div>
+  <p class="msg" id="carryMsg"></p>
+</section>
+
+<!-- DATA -->
+<section class="pane" id="p-data" role="tabpanel" hidden>
+  <h2 class="sec">Year summary</h2>
+  <div class="card wide"><table>
+    <thead><tr><th>Financial year</th><th>Purchase</th><th>Payment</th><th>Entries</th><th>Closing</th></tr></thead>
+    <tbody id="yearsBody"></tbody>
+  </table></div>
+
+  <h2 class="sec">Backup and restore</h2>
+  <p class="note">
+    The backup file holds everything &mdash; suppliers, opening balances for every year, all entries
+    and their references. Keep one after each session; the CSV is for reading in Excel, not for restoring.
+  </p>
+  <div class="actions">
+    <button class="btn gold" id="xlDown">Download Excel (.xlsx)</button>
+    <button class="btn ghost" id="bkDown">Backup (.json)</button>
+    <button class="btn ghost" id="bkUpBtn">Restore from backup</button>
+    <input type="file" id="bkUp" accept=".json,application/json" hidden>
+    <button class="btn ghost" id="expYear">This year to CSV</button>
+    <button class="btn ghost" id="expAll">All years to CSV</button>
+  </div>
+  <p class="msg" id="bkMsg"></p>
+
+  <h2 class="sec">Users</h2>
+  <p class="note">
+    Two PINs. The <b>owner</b> PIN opens everything, including Excel download and this page.
+    The <b>entry</b> PIN opens only the register, and only for purchases, credit notes and debit
+    notes &mdash; payments stay with you. Change both from their defaults before handing the file
+    to anyone.
+  </p>
+  <p class="note" style="max-width:76ch">
+    Be clear on what this is: the PIN keeps the wrong person out of the wrong screen, the way a
+    drawer key does. It is not encryption. Anyone who can open this file in a text editor can read
+    the figures, so treat the file itself as the thing to keep private.
+  </p>
+  <div class="form">
+    <div class="fld"><label for="pinWho">PIN to change</label><select id="pinWho">
+      <option value="admin">Owner</option><option value="entry">Data entry</option></select></div>
+    <div class="fld"><label for="pinNew">New PIN (4&ndash;12 digits)</label>
+      <input type="text" id="pinNew" inputmode="numeric" maxlength="12" placeholder="\u2022\u2022\u2022\u2022"></div>
+    <div class="fld"><label for="pinNew2">Repeat</label>
+      <input type="text" id="pinNew2" inputmode="numeric" maxlength="12" placeholder="\u2022\u2022\u2022\u2022"></div>
+    <button class="btn" id="pinSave">Update PIN</button>
+  </div>
+  <p class="msg" id="pinMsg"></p>
+
+  <h2 class="sec">Storage</h2>
+  <p class="note" id="dataNote"></p>
+  <div class="actions"><button class="btn warn" id="resetAll">Reset to the original spreadsheet data</button></div>
+  <p class="msg" id="resetMsg"></p>
+</section>
+</div>
+
+<script>
+(function(){
+'use strict';
+var KEY='creditors:v3', OLDKEYS=['party-register:v2','payment-register:v1'];
+var SEED={"purchase":[["2026-04-01","RBRR",312894.0],["2026-04-01","VCPL",65518.0],["2026-04-01","RBI",264243.0],["2026-04-07","RBRR",185192.0],["2026-04-08","RBI",173241.0],["2026-04-09","RBRR",72875.0],["2026-04-10","RBI",46021.0],["2026-04-11","RBRR",122746.0],["2026-04-14","RBI",266244.0],["2026-04-15","RBRR",3250.0],["2026-04-16","RBI",179406.0],["2026-04-21","RBI",267801.0],["2026-04-22","RBI",83198.0],["2026-04-23","RBI",207362.0],["2026-04-25","VCPL",133217.0],["2026-04-27","RBD",7179.0],["2026-04-27","VCPL",86307.0],["2026-04-28","RBRR",106988.0],["2026-04-28","RBI",119121.0],["2026-04-29","R N FOODs",4500.0],["2026-04-30","RBI",83194.0],["2026-05-01","RBRR",52801.0],["2026-05-01","RBI",156000.0],["2026-05-02","RBRR",62761.0],["2026-05-04","RBI",96002.0],["2026-05-05","RBRR",29697.0],["2026-05-05","RBI",155423.0],["2026-05-06","RBI",106306.0],["2026-05-07","RBI",73000.0],["2026-05-08","RBI",166531.0],["2026-05-09","RBI",141955.0],["2026-05-14","RBRR",450490.0],["2026-05-14","VCPL",110350.0],["2026-05-14","RBI",178119.0],["2026-05-18","RBI",266285.0],["2026-05-19","RBRR",35302.0],["2026-05-20","RBRR",4250.0],["2026-05-20","RBI",96002.0],["2026-05-21","RBI",169002.0],["2026-05-22","RBI",183601.0],["2026-05-27","RBI",83202.0],["2026-05-28","VCPL",3776.0],["2026-05-29","RBI",274600.0],["2026-06-01","VCPL",15340.0],["2026-06-02","RBI",317070.0],["2026-06-03","RBI",99842.0],["2026-06-04","RBRR",203972.0],["2026-06-05","RBI",166396.0],["2026-06-09","RBI",271098.0],["2026-06-10","RBRR",154242.0],["2026-06-10","R N FOODs",53076.0],["2026-06-10","RBI",141866.0],["2026-06-11","RBI",60251.0],["2026-06-13","VCPL",9000.0],["2026-06-15","RBRR",44352.0],["2026-06-15","R N FOODs",4600.0],["2026-06-15","RBI",275206.0],["2026-06-17","RBI",185902.0],["2026-06-18","RBRR",94355.0],["2026-06-18","VCPL",27140.0],["2026-06-18","R N FOODs",121968.0],["2026-06-19","RBRR",49439.0],["2026-06-20","RBI",181858.0],["2026-06-22","RBI",420380.0],["2026-06-23","RBRR",14400.0],["2026-06-24","RBRR",275200.0],["2026-06-24","RBI",148002.0],["2026-06-25","RBRR",56200.0],["2026-06-27","RBI",73000.0],["2026-06-30","R N FOODs",66890.0],["2026-07-01","RBD",1540.0],["2026-07-01","RBI",276008.0],["2026-07-02","RBRR",268106.0],["2026-07-02","RBI",227344.0],["2026-07-03","RBI",73000.0],["2026-07-04","RBRR",30000.0],["2026-07-04","RBI",140159.0],["2026-07-07","RBI",201121.0],["2026-07-10","RBRR",257955.0],["2026-07-11","RBRR",143957.0],["2026-07-11","R N FOODs",22176.0],["2026-07-13","R N FOODs",26000.0],["2026-07-13","RBI",154402.0],["2026-07-15","RBI",95800.0],["2026-07-17","RBRR",250.0],["2026-07-18","RBRR",84343.0],["2026-07-18","VCPL",30680.0],["2026-07-20","RBD",3590.0],["2026-07-20","R N FOODs",33264.0],["2026-07-22","RBRR",126000.0],["2026-07-22","RBD",3850.0],["2026-07-23","VCPL",30680.0],["2026-07-24","RBRR",147530.0],["2026-07-25","RBI",213904.0],["2026-07-27","R N FOODs",29460.0],["2026-07-28","RBI",42286.0],["2026-07-29","RBRR",111856.0],["2026-07-31","RBRR",42963.0],["2026-07-31","RBI",463399.0],["2026-08-01","RBI",180403.0],["2026-08-04","RBRR",420962.0],["2026-08-04","R N FOODs",24000.0],["2026-08-05","RBRR",37251.0],["2026-08-05","RBI",107202.0],["2026-08-07","RBI",99900.0],["2026-08-10","RBI",108593.0],["2026-08-11","RBRR",199969.0],["2026-08-11","R N FOODs",125620.0],["2026-08-11","RBI",168000.0],["2026-08-14","RBRR",6000.0],["2026-08-14","RBI",92800.0],["2026-08-17","RBRR",9819.0],["2026-08-17","R N FOODs",6300.0],["2026-08-17","RBI",10144.0],["2026-08-18","RBRR",9450.0],["2026-08-18","RBI",140589.0],["2026-08-19","RBI",37559.0],["2026-08-20","RBRR",71879.0],["2026-08-20","RBD",190116.0],["2026-08-20","R N FOODs",50504.0],["2026-08-20","RBI",77720.0],["2026-08-22","RBRR",51989.83],["2026-08-22","RBI",207000.0]],"payment":[["2026-04-04","RBRR",150000.0],["2026-04-04","RBI",150000.0],["2026-04-06","RBRR",400000.0],["2026-04-06","RBD",150000.0],["2026-04-06","VCPL",150000.0],["2026-04-06","RBI",150000.0],["2026-04-08","RBRR",300000.0],["2026-04-09","RBI",350000.0],["2026-04-13","RBD",100000.0],["2026-04-15","RBD",150000.0],["2026-04-15","RBI",100000.0],["2026-04-16","RBRR",100000.0],["2026-04-18","RBI",100000.0],["2026-04-21","VCPL",100000.0],["2026-04-21","RBI",150000.0],["2026-04-23","RBRR",100000.0],["2026-04-23","RBD",38412.0],["2026-04-23","VCPL",1771.0],["2026-04-23","RBI",300000.0],["2026-04-27","RBI",100000.0],["2026-04-28","RBRR",100000.0],["2026-04-29","RBI",150000.0],["2026-05-01","RBI",100000.0],["2026-05-06","VCPL",150000.0],["2026-05-07","RBRR",200000.0],["2026-05-08","RBI",100000.0],["2026-05-09","RBRR",100000.0],["2026-05-12","RBD",3030.0],["2026-05-13","RBRR",100000.0],["2026-05-13","VCPL",100000.0],["2026-05-13","RBI",124958.0],["2026-05-15","RBRR",200000.0],["2026-05-15","RBI",200000.0],["2026-05-16","RBI",150000.0],["2026-05-19","RBRR",150000.0],["2026-05-20","RBI",350000.0],["2026-05-22","VCPL",100000.0],["2026-05-22","RBI",100000.0],["2026-05-23","RBI",100000.0],["2026-05-26","RBI",100000.0],["2026-05-27","RBI",150000.0],["2026-05-29","RBRR",150000.0],["2026-05-29","VCPL",100000.0],["2026-05-29","RBI",200000.0],["2026-05-30","RBI",200000.0],["2026-06-01","RBI",100000.0],["2026-06-02","RBRR",100000.0],["2026-06-03","RBI",100000.0],["2026-06-05","RBI",100000.0],["2026-06-09","RBI",100000.0],["2026-06-10","RBI",200000.0],["2026-06-11","RBI",200000.0],["2026-06-12","RBI",150000.0],["2026-06-17","RBRR",450000.0],["2026-06-17","VCPL",100000.0],["2026-06-19","RBI",300000.0],["2026-06-20","RBI",100000.0],["2026-06-22","RBRR",50000.0],["2026-06-22","RBD",11221.48],["2026-06-22","R N FOODs",50000.0],["2026-06-22","RBI",250000.0],["2026-06-24","RBI",100000.0],["2026-06-26","RBI",310000.0],["2026-06-29","RBI",100000.0],["2026-06-30","RBI",200000.0],["2026-07-01","RBRR",200000.0],["2026-07-01","RBI",100000.0],["2026-07-02","RBI",100000.0],["2026-07-03","RBI",100000.0],["2026-07-06","RBI",150000.0],["2026-07-07","RBI",100000.0],["2026-07-11","RBI",200000.0],["2026-07-14","RBI",200000.0],["2026-07-15","RBRR",100000.0],["2026-07-17","RBI",100000.0],["2026-07-18","RBRR",100000.0],["2026-07-18","RBI",200000.0],["2026-07-21","RBI",150000.0],["2026-07-24","R N FOODs",100000.0],["2026-07-27","RBI",200000.0],["2026-07-28","RBRR",100000.0],["2026-07-29","RBI",150000.0],["2026-07-30","RBRR",100000.0],["2026-07-31","RBRR",200000.0],["2026-07-31","RBI",200000.0],["2026-08-01","RBI",250000.0],["2026-08-04","RBI",100000.0],["2026-08-10","R N FOODs",3960.0],["2026-08-10","RBI",14478.0],["2026-08-12","RBI",250000.0],["2026-08-13","RBRR",200000.0],["2026-08-13","R N FOODs",100000.0],["2026-08-13","RBI",100000.0],["2026-08-17","RBRR",350000.0],["2026-08-17","RBI",300000.0],["2026-08-18","RBI",100000.0],["2026-08-19","RBI",100000.0],["2026-08-20","RBRR",100000.0],["2026-08-20","RBD",8980.0],["2026-08-20","RBI",100000.0],["2026-08-22","RBRR",100000.0],["2026-08-24","VCPL",50000.0],["2026-08-24","R N FOODs",100000.0],["2026-08-25","RBI",100000.0],["2026-08-26","RBRR",300000.0],["2026-08-26","RBI",150000.0],["2026-08-27","RBI",100000.0],["2026-08-31","RBI",100000.0],["2026-09-01","RBI",100000.0],["2026-09-03","RBRR",100000.0],["2026-09-04","RBRR",100000.0],["2026-09-04","VCPL",50000.0],["2026-09-05","RBRR",250000.0],["2026-09-05","RBI",250000.0],["2026-09-06","RBRR",100000.0],["2026-09-06","RBI",100000.0],["2026-09-07","RBRR",100000.0],["2026-09-08","VCPL",50000.0],["2026-09-08","R N FOODs",40000.0],["2026-09-08","RBI",250000.0]],"credit":[],"debit":[]};
+
+var TYPES={purchase:{label:'Purchase',sign:1},credit:{label:'Credit note',sign:1},
+           payment:{label:'Payment',sign:-1},debit:{label:'Debit note',sign:-1}};
+var ADDS=['purchase','credit'], CUTS=['payment','debit'];
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+
+var state={parties:[],entries:[]};
+var ui={tab:'balance',fy:'',regType:'payment',regMonth:'',ason:'',day:'',ledParty:null};
+var nextId=1, FY_LIST=[];
+var role=null;
+
+/* roles: what each PIN unlocks */
+var ROLES={
+  admin:{label:'Owner',tabs:['balance','ledger','register','daily','parties','data'],
+         types:['payment','debit','purchase','credit']},
+  entry:{label:'Data entry',tabs:['register'],
+         types:['purchase','credit','debit']}          // no payments
+};
+var DEFAULT_PINS={admin:'1234',entry:'1111'};
+
+/* Deliberately light: this keeps the wrong screen away from the wrong person,
+   it is not encryption. Anyone who opens the file in an editor can read the data. */
+function pinHash(s){
+  var h=2166136261>>>0;
+  s='cl'+s+'dg';
+  for(var i=0;i<s.length;i++){h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0}
+  return h.toString(36);
+}
+function pins(){
+  state.pins=state.pins||{admin:pinHash(DEFAULT_PINS.admin),entry:pinHash(DEFAULT_PINS.entry)};
+  return state.pins;
+}
+function pinsAreDefault(){
+  var p=pins();
+  return p.admin===pinHash(DEFAULT_PINS.admin)||p.entry===pinHash(DEFAULT_PINS.entry);
+}
+function can(t){return role&&ROLES[role].tabs.indexOf(t)>=0}
+
+var $=function(s){return document.querySelector(s)};
+function localToday(){var d=new Date();
+  return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+var today=localToday();
+
+/* ---------- storage adapter: Claude storage -> localStorage -> memory ---------- */
+var store=(function(){
+  var mem={};
+  var hasW = (typeof window!=='undefined' && window.storage && typeof window.storage.get==='function');
+  var hasL = (function(){try{var k='__t';localStorage.setItem(k,'1');localStorage.removeItem(k);return true}catch(e){return false}})();
+  return {
+    kind: hasW?'app storage':(hasL?'this browser':'this session only'),
+    get:function(k){
+      if(hasW) return window.storage.get(k).then(function(r){return r?r.value:null});
+      if(hasL) return Promise.resolve(localStorage.getItem(k));
+      return Promise.resolve(mem[k]||null);
+    },
+    set:function(k,v){
+      if(hasW) return window.storage.set(k,v);
+      if(hasL) return new Promise(function(res,rej){try{localStorage.setItem(k,v);res(1)}catch(e){rej(e)}});
+      mem[k]=v; return Promise.resolve(1);
+    }
+  };
+})();
+
+/* ---------- helpers ---------- */
+function fyStart(f){return f.slice(0,4)+'-04-01'}
+function fyEnd(f){return (Number(f.slice(0,4))+1)+'-03-31'}
+function fyOf(d){var y=Number(d.slice(0,4)),m=Number(d.slice(5,7)),s=m>=4?y:y-1;
+  return s+'-'+String((s+1)%100).padStart(2,'0')}
+function fyMonths(f){var y=Number(f.slice(0,4)),o=[];
+  for(var i=0;i<12;i++){var mm=4+i,yy=mm>12?y+1:y,m2=mm>12?mm-12:mm;
+    o.push(yy+'-'+String(m2).padStart(2,'0'))}return o}
+function mLabel(ym){return MON[Number(ym.slice(5,7))-1]+' '+ym.slice(0,4)}
+function mDays(ym){return new Date(Number(ym.slice(0,4)),Number(ym.slice(5,7)),0).getDate()}
+function dmy(d){return d.split('-').reverse().join('-')}
+function clamp(d,lo,hi){return d<lo?lo:(d>hi?hi:d)}
+function gap(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
+function fmt(n){if(!n||Math.abs(n)<0.5)return '\u2013';
+  var s=Math.round(Math.abs(n)).toLocaleString('en-IN');return n<0?'('+s+')':s}
+function cell(n){return n?Math.round(n).toLocaleString('en-IN'):''}
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function op(p,f){return (p.openings&&p.openings[f])||0}
+function partyById(id){for(var i=0;i<state.parties.length;i++) if(state.parties[i].id===id) return state.parties[i]; return null}
+
+function parseAmount(raw){
+  var s=String(raw).replace(/[,\s\u20B9]/g,'');
+  if(s==='') return {ok:true,v:0};
+  if(!/^\d*\.?\d*$/.test(s)) return {ok:false,msg:'Enter digits only \u2014 no minus sign or letters.'};
+  var n=Number(s);
+  if(!isFinite(n)||isNaN(n)) return {ok:false,msg:'That is not a valid amount.'};
+  if(n<0) return {ok:false,msg:'Amount cannot be negative. Use the matching note type instead.'};
+  if(n>1e11) return {ok:false,msg:'That amount looks far too large.'};
+  return {ok:true,v:Math.round(n*100)/100};
+}
+
+/* ---------- save ---------- */
+var saveTimer=null, lastFail=false;
+function setStat(cls,txt){var e=$('#stat');if(!e)return;
+  e.className='status '+cls; $('#statTxt').textContent=txt;
+  $('#retry').hidden = (cls!=='failed');}
+function queueSave(){
+  clearTimeout(saveTimer); setStat('saving','Saving\u2026');
+  saveTimer=setTimeout(doSave,300);
+}
+function doSave(){
+  return store.set(KEY,JSON.stringify(state)).then(function(){
+    lastFail=false; setStat('saved','All changes saved');
+  }).catch(function(){
+    lastFail=true; setStat('failed','Not saved');
+  });
+}
+
+/* ---------- seed / load ---------- */
+function seedState(){
+  var base=[['RBRR',1118143],['RBD',445484.48],['VCPL',375850],['R N FOODs',0],['RBI',1534134]];
+  state={parties:[],entries:[]}; nextId=1;
+  var by={};
+  base.forEach(function(b){var p={id:nextId++,name:b[0],openings:{'2026-27':b[1]}};
+    state.parties.push(p); by[b[0]]=p.id});
+  if(SEED) Object.keys(TYPES).forEach(function(t){
+    (SEED[t]||[]).forEach(function(r){
+      if(by[r[1]]===undefined){var p={id:nextId++,name:r[1],openings:{}};state.parties.push(p);by[r[1]]=p.id}
+      state.entries.push({id:nextId++,date:r[0],partyId:by[r[1]],type:t,amount:r[2],ref:'',note:''});
+    })});
+}
+function normalise(d){
+  if(!d||!d.parties||!d.parties.length) return null;
+  d.entries=d.entries||[];
+  d.parties.forEach(function(p){
+    if(!p.openings){p.openings={}; if(p.opening) p.openings['2026-27']=p.opening; delete p.opening}
+  });
+  d.entries=d.entries.filter(function(e){
+    return e && e.date && TYPES[e.type] && typeof e.amount==='number' && isFinite(e.amount) && e.amount>=0;
+  });
+  return d;
+}
+function buildFyList(){
+  var s={}; state.entries.forEach(function(e){s[fyOf(e.date)]=1});
+  state.parties.forEach(function(p){Object.keys(p.openings||{}).forEach(function(f){s[f]=1})});
+  s[fyOf(today)]=1;
+  var years=Object.keys(s).map(function(f){return Number(f.slice(0,4))});
+  var lo=Math.min.apply(null,years), hi=Math.max.apply(null,years);
+  hi=Math.max(hi, Number(fyOf(today).slice(0,4))+4);   // always 5 years ahead
+  FY_LIST=[];
+  for(var y=lo;y<=hi;y++) FY_LIST.push(y+'-'+String((y+1)%100).padStart(2,'0'));
+}
+
+function boot(){
+  var keys=[KEY].concat(OLDKEYS);
+  var chain=Promise.resolve(null);
+  keys.forEach(function(k){
+    chain=chain.then(function(found){
+      if(found) return found;
+      return store.get(k).then(function(v){
+        if(!v) return null;
+        try{ return normalise(JSON.parse(v)) }catch(e){ return null }   // corrupt -> ignore, keep going
+      }).catch(function(){ return null });
+    });
+  });
+  chain.then(function(loaded){
+    if(loaded){
+      state=loaded;
+      var ids=[0];
+      state.parties.forEach(function(p){ids.push(p.id)});
+      state.entries.forEach(function(e){ids.push(e.id)});
+      nextId=1+Math.max.apply(null,ids);
+    }else{ seedState() }
+    buildFyList();
+    var dates=state.entries.map(function(e){return e.date}).sort();
+    var last=dates.length?dates[dates.length-1]:today;
+    ui.fy = FY_LIST.indexOf(fyOf(last))>=0 ? fyOf(last) : FY_LIST[0];
+    ui.ledParty = state.parties.length?state.parties[0].id:null;
+    $('#fy').innerHTML=FY_LIST.map(function(f){return '<option>'+f+'</option>'}).join('');
+    $('#fy').value=ui.fy;
+    setYear(ui.fy,last);
+    bind(); installManifest(); bindGate(); doSave();
+  });
+}
+
+/* ---------- sign in ---------- */
+function bindGate(){
+  if(pinsAreDefault()){
+    var h=$('#gateHint'); h.hidden=false;
+    h.innerHTML='First time here? The owner PIN is <b>1234</b> and the data-entry PIN is <b>1111</b>. '+
+      'Change both from the Data tab once you are in.';
+  }
+  $('#signIn').addEventListener('click',trySignIn);
+  $('#pin').addEventListener('keydown',function(e){if(e.key==='Enter') trySignIn()});
+  $('#pin').focus();
+}
+function trySignIn(){
+  var v=$('#pin').value.trim(), h=pinHash(v), p=pins();
+  var r = h===p.admin?'admin' : (h===p.entry?'entry':null);
+  if(!r){ $('#gateMsg').textContent='That PIN did not match.'; $('#pin').value=''; $('#pin').focus(); return }
+  role=r; $('#pin').value=''; $('#gateMsg').textContent='';
+  $('#gate').hidden=true; $('#gate').style.display='none';
+  $('.app').classList.add('on');
+  applyRole();
+}
+function signOut(){
+  role=null;
+  $('.app').classList.remove('on');
+  $('#gate').hidden=false; $('#gate').style.display='flex';
+  $('#pin').value=''; $('#pin').focus();
+}
+function applyRole(){
+  var R=ROLES[role];
+  ['balance','ledger','register','daily','parties','data'].forEach(function(t){
+    var vis=R.tabs.indexOf(t)>=0;
+    $('#t-'+t).hidden=!vis;
+    if(!vis) $('#p-'+t).hidden=true;
+  });
+  Array.prototype.forEach.call($('#regSeg').querySelectorAll('button'),function(b){
+    b.hidden = R.types.indexOf(b.dataset.type)<0;
+  });
+  if(R.types.indexOf(ui.regType)<0) ui.regType=R.types[0];
+  Array.prototype.forEach.call($('#regSeg').querySelectorAll('button'),function(b){
+    b.setAttribute('aria-pressed',String(b.dataset.type===ui.regType))});
+
+  $('#who').innerHTML='<span class="chip">'+R.label+'</span>'+
+    '<button class="btn ghost small" id="signOut">Sign out</button>';
+  $('#signOut').addEventListener('click',signOut);
+  $('#sub').textContent = role==='entry'
+    ? 'Enter purchases and notes by date \u2014 payments are handled by the owner'
+    : 'Suppliers you buy from \u2014 what you owe and how old it is';
+
+  goTab(R.tabs.indexOf(ui.tab)>=0?ui.tab:R.tabs[0]);
+}
+
+function setYear(f,prefer){
+  ui.fy=f;
+  var lo=fyStart(f), hi=fyEnd(f);
+  var pick=clamp(prefer&&prefer>=lo&&prefer<=hi?prefer:today,lo,hi);
+  ui.ason=pick; ui.day=pick; ui.regMonth=pick.slice(0,7);
+  ['#ason','#dayDate','#txDate'].forEach(function(s){var e=$(s); e.min=lo; e.max=hi});
+  $('#ason').value=ui.ason; $('#dayDate').value=ui.day; $('#txDate').value=ui.day;
+  $('#regMonth').innerHTML=fyMonths(f).map(function(m){
+    return '<option value="'+m+'">'+mLabel(m)+'</option>'}).join('');
+  $('#regMonth').value=ui.regMonth;
+  $('#sub').textContent='Suppliers you buy from \u2014 '+dmy(lo)+' to '+dmy(hi);
+  $('#opFy').textContent='for '+f;
+  $('#opHead').textContent='Opening '+dmy(lo);
+}
+
+/* ---------- FIFO ageing: oldest bill cleared first ---------- */
+function ageing(p,f,asOn){
+  var from=fyStart(f);
+  var mine=state.entries.filter(function(e){
+    return e.partyId===p.id && e.date>=from && e.date<=asOn});
+  var o=op(p,f);
+  var bills=[];
+  if(o>0) bills.push({date:from,amt:o,label:'Opening balance',ref:''});
+  mine.filter(function(e){return ADDS.indexOf(e.type)>=0})
+      .sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id})
+      .forEach(function(e){bills.push({date:e.date,amt:e.amount,label:TYPES[e.type].label,ref:e.ref||'',id:e.id})});
+
+  var credit=mine.filter(function(e){return CUTS.indexOf(e.type)>=0})
+                 .reduce(function(a,e){return a+e.amount},0);
+  if(o<0) credit+= -o;
+
+  var t={purchase:0,credit:0,payment:0,debit:0};
+  mine.forEach(function(e){t[e.type]+=e.amount});
+
+  var paidUpto={};
+  for(var i=0;i<bills.length;i++){
+    var take=Math.min(credit,bills[i].amt);
+    bills[i].paid=take; bills[i].open=bills[i].amt-take; credit-=take;
+    if(bills[i].id) paidUpto[bills[i].id]= bills[i].open<0.5 ? 'paid' : (take>0.5?'part':'open');
+  }
+  var openBills=bills.filter(function(b){return b.open>0.5});
+  var advance=credit;
+  var bal=o+t.purchase+t.credit-t.payment-t.debit;
+  var buckets=[0,0,0,0];
+  openBills.forEach(function(b){var g=gap(b.date,asOn);
+    buckets[g<=30?0:g<=60?1:g<=90?2:3]+=b.open});
+  return {p:p,o:o,pur:t.purchase,cr:t.credit,pay:t.payment,dr:t.debit,bal:bal,
+          openBills:openBills,oldest:openBills.length?openBills[0].date:null,
+          days:openBills.length?gap(openBills[0].date,asOn):null,
+          buckets:buckets,advance:advance,status:paidUpto};
+}
+function allRows(asOn,f){return state.parties.map(function(p){return ageing(p,f,asOn)})}
+function lastDate(types,f){
+  var lo=fyStart(f),hi=fyEnd(f),d=null;
+  state.entries.forEach(function(e){
+    if(types.indexOf(e.type)>=0&&e.date>=lo&&e.date<=hi&&(!d||e.date>d)) d=e.date});
+  return d;
+}
+
+/* ---------- balance ---------- */
+var BK=[['0\u201330 days','var(--b1)','o1'],['31\u201360 days','var(--b2)','o2'],
+        ['61\u201390 days','var(--b3)','o3'],['Over 90 days','var(--b4)','o4']];
+function renderBalance(){
+  var d=ui.ason,f=ui.fy;
+  $('#balCap').textContent='What you owe as on '+dmy(d)+'  \u00b7  FY '+f;
+  if(!state.parties.length){
+    $('#balBody').innerHTML='<tr><td colspan="8"><div class="empty">No suppliers yet. Add one on the Parties tab.</div></td></tr>';
+    $('#agingBox').innerHTML=''; $('#lagFlag').innerHTML=''; return;
+  }
+  var rows=allRows(d,f);
+  var tot={o:0,pur:0,cr:0,pay:0,dr:0,bal:0},bk=[0,0,0,0],adv=0;
+  var html=rows.map(function(r){
+    tot.o+=r.o;tot.pur+=r.pur;tot.cr+=r.cr;tot.pay+=r.pay;tot.dr+=r.dr;tot.bal+=r.bal;
+    r.buckets.forEach(function(v,i){bk[i]+=v}); adv+=r.advance;
+    var cls=r.bal>0.5?'due':(r.bal<-0.5?'adv':'zero');
+    var age='<span class="soft2">\u2013</span>';
+    if(r.days!==null){
+      var k=r.days<=30?0:r.days<=60?1:r.days<=90?2:3;
+      age='<span class="tag '+BK[k][2]+'">'+r.days+' d</span>';
+    }else if(r.bal<-0.5){ age='<span class="tag o1">advance</span>' }
+    return '<tr><td><button class="plink" data-party="'+r.p.id+'">'+esc(r.p.name)+'</button></td>'+
+      '<td class="soft2">'+fmt(r.o)+'</td>'+
+      '<td class="addcol">'+fmt(r.pur)+'</td><td class="addcol soft2">'+fmt(r.cr)+'</td>'+
+      '<td class="cutcol edge">'+fmt(r.pay)+'</td><td class="cutcol soft2">'+fmt(r.dr)+'</td>'+
+      '<td class="edge"><span class="pill '+cls+'">'+fmt(r.bal)+'</span></td>'+
+      '<td>'+age+'</td></tr>';
+  }).join('');
+  html+='<tr class="sum"><th>Total</th><td>'+fmt(tot.o)+'</td><td class="addcol">'+fmt(tot.pur)+
+    '</td><td class="addcol">'+fmt(tot.cr)+'</td><td class="cutcol edge">'+fmt(tot.pay)+
+    '</td><td class="cutcol">'+fmt(tot.dr)+'</td><td class="edge '+
+    (tot.bal>0.5?'due':tot.bal<-0.5?'adv':'')+'">'+fmt(tot.bal)+'</td><td></td></tr>';
+  $('#balBody').innerHTML=html;
+
+  var outst=bk[0]+bk[1]+bk[2]+bk[3];
+  var seg=BK.map(function(b,i){
+    return outst?'<span style="width:'+(100*bk[i]/outst)+'%;background:'+b[1]+'"></span>':''}).join('');
+  var keys=BK.map(function(b,i){
+    return '<span><i style="background:'+b[1]+'"></i>'+b[0]+'<b>'+fmt(bk[i])+'</b></span>'}).join('');
+  $('#agingBox').innerHTML=
+    '<div class="hd"><div><div class="lbl">Total outstanding to suppliers</div>'+
+    '<div class="big'+(outst?'':' ok')+'">\u20B9 '+(outst?Math.round(outst).toLocaleString('en-IN'):'0')+'</div></div>'+
+    '<div style="text-align:right"><div class="lbl">Paid in advance</div>'+
+    '<div class="big ok">\u20B9 '+Math.round(adv).toLocaleString('en-IN')+'</div></div></div>'+
+    (outst?'<div class="bar">'+seg+'</div><div class="keys">'+keys+'</div>'
+          :'<p class="note" style="margin:0">Nothing outstanding on this date.</p>');
+
+  var lp=lastDate(ADDS,f), lpay=lastDate(CUTS,f);
+  $('#lagFlag').innerHTML=(lp&&lpay&&lp<lpay&&lp<d)
+    ? '<p class="flag">Purchases are entered only up to <b>'+dmy(lp)+'</b> while payments run to <b>'+
+      dmy(lpay)+'</b>. The '+(gap(lp,lpay)-1)+' days in between are missing, so the figures below '+
+      'understate what you actually owe.</p>' : '';
+}
+
+/* ---------- party ledger ---------- */
+function renderLedger(){
+  var sel=$('#ledParty');
+  sel.innerHTML=state.parties.map(function(p){
+    return '<option value="'+p.id+'"'+(p.id===ui.ledParty?' selected':'')+'>'+esc(p.name)+'</option>'}).join('');
+  var p=partyById(ui.ledParty);
+  if(!p){ $('#ledBody').innerHTML='<tr><td colspan="8"><div class="empty">Add a supplier first.</div></td></tr>';
+    $('#ledHead').innerHTML=''; return }
+
+  var f=ui.fy, lo=fyStart(f), hi=fyEnd(f), on=ui.ason;
+  var a=ageing(p,f,on);          // summary and tags follow the as-on date
+  var yr=ageing(p,f,hi);         // table footer covers the whole year
+  $('#ledCap').textContent=p.name+'  \u00b7  FY '+f;
+  $('#ledHead').innerHTML='<div class="aging"><div class="hd">'+
+    '<div><div class="lbl">You owe as on '+dmy(on)+'</div><div class="big'+(a.bal>0.5?'':' ok')+'">\u20B9 '+
+    Math.round(Math.abs(a.bal)).toLocaleString('en-IN')+(a.bal<-0.5?' advance':'')+'</div></div>'+
+    '<div style="text-align:right"><div class="lbl">Oldest unpaid bill</div><div class="big'+(a.days===null?' ok':'')+'">'+
+    (a.days===null?'none':a.days+' days')+'</div></div></div>'+
+    (a.oldest?'<p class="note" style="margin:9px 0 0">Dated '+dmy(a.oldest)+
+      '. Payments are applied to the oldest bill first, so everything before this date is settled.</p>':'')+'</div>';
+
+  var rows=state.entries.filter(function(e){return e.partyId===p.id&&e.date>=lo&&e.date<=hi})
+    .sort(function(x,y){return x.date<y.date?-1:x.date>y.date?1:x.id-y.id});
+  var run=a.o;
+  var html='<tr><td class="soft2">'+dmy(lo)+'</td><th>Opening balance</th><td></td>'+
+    '<td class="addcol">'+fmt(a.o>0?a.o:0)+'</td><td class="cutcol">'+fmt(a.o<0?-a.o:0)+
+    '</td><td>'+fmt(run)+'</td><td></td><td></td></tr>';
+  rows.forEach(function(e){
+    var s=TYPES[e.type].sign; run+=s*e.amount;
+    var st=a.status[e.id];
+    var tag = e.date>on ? '<span class="tag o2">after '+dmy(on)+'</span>'
+            : st==='paid'?'<span class="tag o1">paid</span>'
+            : st==='part'?'<span class="tag o2">part paid</span>'
+            : st==='open'?'<span class="tag o4">unpaid</span>':'';
+    html+='<tr><td class="soft2">'+dmy(e.date)+'</td>'+
+      '<th>'+TYPES[e.type].label+(e.note?' <span class="soft2">\u00b7 '+esc(e.note)+'</span>':'')+'</th>'+
+      '<td class="soft2" style="text-align:left">'+esc(e.ref||'')+'</td>'+
+      '<td class="addcol">'+(s>0?fmt(e.amount):'')+'</td>'+
+      '<td class="cutcol">'+(s<0?fmt(e.amount):'')+'</td>'+
+      '<td>'+fmt(run)+'</td><td>'+tag+'</td>'+
+      '<td style="text-align:right"><button class="btn small ghost" data-rm="'+e.id+'">Delete</button></td></tr>';
+  });
+  html+='<tr class="sum"><th colspan="3">Closing balance '+dmy(hi)+'</th>'+
+    '<td class="addcol">'+fmt(yr.pur+yr.cr)+'</td><td class="cutcol">'+fmt(yr.pay+yr.dr)+
+    '</td><td class="'+(yr.bal>0.5?'due':yr.bal<-0.5?'adv':'')+'">'+fmt(yr.bal)+'</td><td></td><td></td></tr>';
+  $('#ledBody').innerHTML=html;
+}
+
+/* ---------- register ---------- */
+function cellEntries(date,pid,type){
+  return state.entries.filter(function(e){
+    return e.date===date&&e.partyId===pid&&e.type===type})}
+function renderRegister(){
+  var ym=ui.regMonth, type=ui.regType;
+  if(!state.parties.length){
+    $('#regGrid').innerHTML='<tbody><tr><td><div class="empty">Add a supplier first.</div></td></tr></tbody>';return}
+  var dates=[];
+  for(var d=1;d<=mDays(ym);d++) dates.push(ym+'-'+String(d).padStart(2,'0'));
+  var head='<thead><tr><th>'+TYPES[type].label+'</th>'+dates.map(function(ds){
+    return '<th class="'+(new Date(ds).getDay()===0?'sun':'')+'">'+Number(ds.slice(8))+'</th>'}).join('')+
+    '<th class="tot">Total</th></tr></thead>';
+  var col=dates.map(function(){return 0}), grand=0, body='<tbody>';
+  state.parties.forEach(function(p){
+    var rt=0, tds='';
+    dates.forEach(function(ds,i){
+      var es=cellEntries(ds,p.id,type);
+      var v=es.reduce(function(a,e){return a+e.amount},0);
+      rt+=v; col[i]+=v;
+      tds+='<td class="'+(ds===today?'today':'')+'">'+
+        (es.length>1
+          ? '<button class="multi" data-open="'+p.id+'">'+cell(v)+' \u00d7'+es.length+'</button>'
+          : '<input inputmode="decimal" data-date="'+ds+'" data-party="'+p.id+'" class="'+(v?'filled':'')+
+            '" value="'+cell(v)+'" aria-label="'+esc(p.name)+' '+ds+'">')+'</td>';
+    });
+    grand+=rt;
+    body+='<tr><th>'+esc(p.name)+'</th>'+tds+'<td class="tot">'+cell(rt)+'</td></tr>';
+  });
+  body+='<tr class="dt"><th>Day total</th>'+col.map(function(v){return '<td>'+cell(v)+'</td>'}).join('')+
+    '<td>'+cell(grand)+'</td></tr></tbody>';
+  $('#regGrid').innerHTML=head+body;
+}
+
+/* ---------- daily ---------- */
+function renderDaily(){
+  var d=ui.day;
+  $('#dayCap').textContent='Activity on '+dmy(d);
+  if(!state.parties.length){
+    $('#dayBody').innerHTML='<tr><td colspan="6"><div class="empty">Add a supplier first.</div></td></tr>';
+    $('#dayNote').textContent=''; return}
+  var rows=allRows(d,ui.fy), t={purchase:0,credit:0,payment:0,debit:0};
+  var html=rows.map(function(r){
+    var v={};
+    Object.keys(TYPES).forEach(function(k){
+      v[k]=state.entries.filter(function(e){return e.date===d&&e.partyId===r.p.id&&e.type===k})
+        .reduce(function(a,e){return a+e.amount},0);
+      t[k]+=v[k];
+    });
+    function z(x){return x?'':'zero'}
+    return '<tr><th class="party">'+esc(r.p.name)+'</th>'+
+      '<td class="addcol '+z(v.purchase)+'">'+fmt(v.purchase)+'</td>'+
+      '<td class="addcol '+z(v.credit)+'">'+fmt(v.credit)+'</td>'+
+      '<td class="cutcol edge '+z(v.payment)+'">'+fmt(v.payment)+'</td>'+
+      '<td class="cutcol '+z(v.debit)+'">'+fmt(v.debit)+'</td>'+
+      '<td class="edge '+(r.bal>0.5?'due':r.bal<-0.5?'adv':'zero')+'">'+fmt(r.bal)+'</td></tr>';
+  }).join('');
+  html+='<tr class="sum"><th>Total</th><td class="addcol">'+fmt(t.purchase)+'</td><td class="addcol">'+
+    fmt(t.credit)+'</td><td class="cutcol edge">'+fmt(t.payment)+'</td><td class="cutcol">'+
+    fmt(t.debit)+'</td><td></td></tr>';
+  $('#dayBody').innerHTML=html;
+  var cl=t.payment+t.debit, bits=[];
+  if(t.payment) bits.push(Math.round(t.payment).toLocaleString('en-IN')+' paid');
+  if(t.debit) bits.push(Math.round(t.debit).toLocaleString('en-IN')+' in debit notes');
+  $('#dayNote').textContent = cl
+    ? Math.round(cl).toLocaleString('en-IN')+' cleared across all suppliers \u2014 '+bits.join(' and ')+'.'
+    : 'Nothing was cleared on this date.';
+}
+
+/* ---------- parties ---------- */
+function renderParties(){
+  var f=ui.fy, lo=fyStart(f), hi=fyEnd(f);
+  $('#partiesCap').textContent='Suppliers \u2014 FY '+f;
+  if(!state.parties.length){
+    $('#partiesBody').innerHTML='<tr><td colspan="6"><div class="empty">No suppliers yet. Add your first one above.</div></td></tr>';return}
+  $('#partiesBody').innerHTML=allRows(hi,f).map(function(r){
+    var n=state.entries.filter(function(e){
+      return e.partyId===r.p.id&&e.date>=lo&&e.date<=hi}).length;
+    return '<tr><th class="party">'+esc(r.p.name)+'</th>'+
+      '<td><input type="number" step="0.01" value="'+r.o+'" data-op="'+r.p.id+
+      '" style="width:150px;text-align:right" aria-label="'+esc(r.p.name)+' opening"></td>'+
+      '<td class="'+(r.bal>0.5?'due':r.bal<-0.5?'adv':'zero')+'">'+fmt(r.bal)+'</td>'+
+      '<td class="soft2">'+n+'</td>'+
+      '<td class="soft2">'+(r.days===null?'\u2013':r.days+' d')+'</td>'+
+      '<td style="text-align:right"><button class="btn ghost small" data-del="'+r.p.id+'">Remove</button></td></tr>';
+  }).join('');
+}
+
+/* ---------- data ---------- */
+function renderData(){
+  $('#yearsBody').innerHTML=FY_LIST.map(function(f){
+    var lo=fyStart(f),hi=fyEnd(f);
+    var n=state.entries.filter(function(e){return e.date>=lo&&e.date<=hi}).length;
+    var rows=allRows(hi,f);
+    var pur=rows.reduce(function(a,r){return a+r.pur+r.cr},0);
+    var pay=rows.reduce(function(a,r){return a+r.pay+r.dr},0);
+    var bal=rows.reduce(function(a,r){return a+r.bal},0);
+    return '<tr'+(f===ui.fy?' style="font-weight:600"':'')+'><th>'+f+(f===ui.fy?' \u2039 open':'')+'</th>'+
+      '<td>'+fmt(pur)+'</td><td>'+fmt(pay)+'</td><td class="soft2">'+(n||'\u2013')+'</td>'+
+      '<td class="'+(bal>0.5?'due':bal<-0.5?'adv':'zero')+'">'+fmt(bal)+'</td></tr>';
+  }).join('');
+  var parts=Object.keys(TYPES).map(function(t){
+    return state.entries.filter(function(e){return e.type===t}).length+' '+TYPES[t].label.toLowerCase()});
+  $('#dataNote').textContent=state.parties.length+' suppliers, '+state.entries.length+
+    ' entries ('+parts.join(', ')+'). Saved in '+store.kind+
+    '. Download a backup regularly \u2014 clearing browser data will erase this.';
+}
+
+/* ---------- minimal .xlsx writer (no libraries, works offline) ----------
+   An xlsx file is a zip of XML parts. We store entries uncompressed
+   (method 0), which Excel, LibreOffice and Google Sheets all accept. */
+var CRC=(function(){var t=[];for(var n=0;n<256;n++){var c=n;
+  for(var k=0;k<8;k++) c=c&1?0xEDB88320^(c>>>1):c>>>1; t[n]=c>>>0}
+  return function(b){var c=0xFFFFFFFF;
+    for(var i=0;i<b.length;i++) c=t[(c^b[i])&0xFF]^(c>>>8);
+    return (c^0xFFFFFFFF)>>>0}})();
+function zip(files){
+  var enc=new TextEncoder(), parts=[], cd=[], off=0;
+  function u16(n){return [n&255,(n>>8)&255]}
+  function u32(n){return [n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255]}
+  files.forEach(function(f){
+    var data=enc.encode(f.body), crc=CRC(data), nm=enc.encode(f.name);
+    var lh=[].concat([80,75,3,4],u16(20),u16(0),u16(0),u16(0),u16(0),
+      u32(crc),u32(data.length),u32(data.length),u16(nm.length),u16(0));
+    parts.push(new Uint8Array(lh),nm,data);
+    cd.push({crc:crc,len:data.length,nm:nm,off:off});
+    off+=lh.length+nm.length+data.length;
+  });
+  var cdb=[];
+  cd.forEach(function(e){
+    cdb=cdb.concat([80,75,1,2],u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),
+      u32(e.crc),u32(e.len),u32(e.len),u16(e.nm.length),
+      u16(0),u16(0),u16(0),u16(0),u32(0),u32(e.off));
+    cdb=cdb.concat(Array.from(e.nm));
+  });
+  var end=[].concat([80,75,5,6],u16(0),u16(0),u16(cd.length),u16(cd.length),
+    u32(cdb.length),u32(off),u16(0));
+  parts.push(new Uint8Array(cdb),new Uint8Array(end));
+  return new Blob(parts,{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+}
+function colName(i){var s='';i++;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=(i-m-1)/26}return s}
+function xe(s){return String(s).replace(/[&<>]/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c]}).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,'')}
+function serial(iso){return Math.round((new Date(iso+'T00:00:00Z')-new Date('1899-12-30T00:00:00Z'))/86400000)}
+
+/* a cell is a plain value, or {d:'2026-04-01'} for a date, or {t:'text'} */
+function sheetXml(rows){
+  var x='<?xml version="1.0" encoding="UTF-8"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+  rows.forEach(function(r,ri){
+    x+='<row r="'+(ri+1)+'">';
+    r.forEach(function(v,ci){
+      var ref=colName(ci)+(ri+1);
+      if(v===null||v===undefined||v==='') return;
+      if(ri===0) x+='<c r="'+ref+'" s="1" t="inlineStr"><is><t>'+xe(v)+'</t></is></c>';
+      else if(typeof v==='object'&&v.d) x+='<c r="'+ref+'" s="2"><v>'+serial(v.d)+'</v></c>';
+      else if(typeof v==='number'&&isFinite(v)) x+='<c r="'+ref+'" s="3"><v>'+v+'</v></c>';
+      else x+='<c r="'+ref+'" t="inlineStr"><is><t>'+xe(typeof v==='object'?v.t:v)+'</t></is></c>';
+    });
+    x+='</row>';
+  });
+  return x+'</sheetData></worksheet>';
+}
+function buildXlsx(sheets){
+  var ct='<?xml version="1.0" encoding="UTF-8"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">'+
+    '<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>'+
+    '<Default Extension="xml" ContentType="application/xml"/>'+
+    '<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+
+    '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+
+    sheets.map(function(s,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+
+      '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>'}).join('')+
+    '</Types>';
+  var rels='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    '<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+  var wb='<?xml version="1.0" encoding="UTF-8"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" '+
+    'xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+
+    sheets.map(function(s,i){return '<sheet name="'+xe(s.name)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>'}).join('')+
+    '</sheets></workbook>';
+  var wbr='<?xml version="1.0" encoding="UTF-8"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+
+    sheets.map(function(s,i){return '<Relationship Id="rId'+(i+1)+
+      '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>'}).join('')+
+    '<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+  var st='<?xml version="1.0" encoding="UTF-8"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+    '<numFmts count="2"><numFmt numFmtId="164" formatCode="dd\\-mm\\-yyyy"/><numFmt numFmtId="165" formatCode="#,##0.00"/></numFmts>'+
+    '<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font>'+
+    '<font><b/><sz val="11"/><name val="Calibri"/></font></fonts>'+
+    '<fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills>'+
+    '<borders count="1"><border/></borders>'+
+    '<cellStyleXfs count="1"><xf/></cellStyleXfs>'+
+    '<cellXfs count="4"><xf xfId="0"/><xf xfId="0" fontId="1" applyFont="1"/>'+
+    '<xf xfId="0" numFmtId="164" applyNumberFormat="1"/>'+
+    '<xf xfId="0" numFmtId="165" applyNumberFormat="1"/></cellXfs></styleSheet>';
+  var files=[{name:'[Content_Types].xml',body:ct},{name:'_rels/.rels',body:rels},
+    {name:'xl/workbook.xml',body:wb},{name:'xl/_rels/workbook.xml.rels',body:wbr},
+    {name:'xl/styles.xml',body:st}];
+  sheets.forEach(function(s,i){files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',body:sheetXml(s.rows)})});
+  return zip(files);
+}
+
+function exportXlsx(){
+  if(role!=='admin') return;
+  var f=ui.fy, on=ui.ason, rows=allRows(on,f);
+
+  var bal=[['Party','Opening','Purchase','Credit note','Payment','Debit note','You owe','Oldest unpaid (days)','Oldest unpaid bill']];
+  rows.forEach(function(r){bal.push([r.p.name,r.o,r.pur,r.cr,r.pay,r.dr,r.bal,
+    r.days===null?'':r.days, r.oldest?{d:r.oldest}:''])});
+  bal.push(['TOTAL',
+    rows.reduce(function(a,r){return a+r.o},0), rows.reduce(function(a,r){return a+r.pur},0),
+    rows.reduce(function(a,r){return a+r.cr},0), rows.reduce(function(a,r){return a+r.pay},0),
+    rows.reduce(function(a,r){return a+r.dr},0), rows.reduce(function(a,r){return a+r.bal},0),'','']);
+
+  var age=[['Party','0-30 days','31-60 days','61-90 days','Over 90 days','Total outstanding','Advance paid']];
+  rows.forEach(function(r){var b=r.buckets;
+    age.push([r.p.name,b[0],b[1],b[2],b[3],b[0]+b[1]+b[2]+b[3],r.advance])});
+
+  var tx=[['Date','Financial year','Party','Type','Bill / ref','Remark','Amount','Entered by']];
+  state.entries.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id})
+    .forEach(function(e){var p=partyById(e.partyId);
+      tx.push([{d:e.date},fyOf(e.date),p?p.name:'?',TYPES[e.type].label,
+        e.ref||'',e.note||'',e.amount,e.by||''])});
+
+  var opn=[['Party'].concat(FY_LIST)];
+  state.parties.forEach(function(p){
+    opn.push([p.name].concat(FY_LIST.map(function(y){return op(p,y)||''})))});
+
+  var led=[['Party','Date','Particulars','Bill / ref','Adds','Clears','Running balance','Status']];
+  state.parties.forEach(function(p){
+    var a=ageing(p,f,on), run=a.o;
+    led.push([p.name,{d:fyStart(f)},'Opening balance','',a.o>0?a.o:'',a.o<0?-a.o:'',run,'']);
+    state.entries.filter(function(e){return e.partyId===p.id&&e.date>=fyStart(f)&&e.date<=fyEnd(f)})
+      .sort(function(x,y){return x.date<y.date?-1:x.date>y.date?1:x.id-y.id})
+      .forEach(function(e){var s=TYPES[e.type].sign; run+=s*e.amount;
+        led.push([p.name,{d:e.date},TYPES[e.type].label,e.ref||'',
+          s>0?e.amount:'',s<0?e.amount:'',run,
+          e.date>on?'after '+dmy(on):(a.status[e.id]||'')])});
+  });
+
+  var blob=buildXlsx([{name:'Balance',rows:bal},{name:'Ageing',rows:age},
+    {name:'Ledgers',rows:led},{name:'Transactions',rows:tx},{name:'Opening balances',rows:opn}]);
+  var u=URL.createObjectURL(blob), a=document.createElement('a');
+  a.href=u; a.download='creditors-'+f+'-as-on-'+on+'.xlsx'; a.click();
+  setTimeout(function(){URL.revokeObjectURL(u)},1500);
+  msg('#bkMsg','Excel file downloaded \u2014 five sheets, figures as on '+dmy(on)+'.','ok');
+}
+
+function exportCsv(all){
+  var lo=fyStart(ui.fy),hi=fyEnd(ui.fy);
+  var L=['Section,Financial year,Date,Party,Type,Bill/ref,Remark,Amount'];
+  var yrs = all?FY_LIST:[ui.fy];
+  yrs.forEach(function(f){
+    state.parties.forEach(function(p){
+      if(op(p,f)) L.push(['Opening',f,fyStart(f),'"'+p.name+'"','Opening balance','','',op(p,f)].join(','));
+    });
+  });
+  state.entries.filter(function(e){return all||(e.date>=lo&&e.date<=hi)})
+    .sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id})
+    .forEach(function(e){
+      var p=partyById(e.partyId);
+      L.push(['Entry',fyOf(e.date),e.date,'"'+(p?p.name:'?')+'"',TYPES[e.type].label,
+        '"'+(e.ref||'')+'"','"'+(e.note||'')+'"',e.amount].join(','));
+    });
+  download(L.join('\n'),'text/csv', all?'creditors-all-years.csv':'creditors-'+ui.fy+'.csv');
+}
+function download(text,mime,name){
+  var u=URL.createObjectURL(new Blob([text],{type:mime}));
+  var a=document.createElement('a'); a.href=u; a.download=name; a.click();
+  setTimeout(function(){URL.revokeObjectURL(u)},1000);
+}
+
+/* ---------- installable manifest ---------- */
+function installManifest(){
+  try{
+    var icon='data:image/svg+xml;utf8,'+encodeURIComponent(
+      '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">'+
+      '<rect width="512" height="512" rx="96" fill="#0F2E38"/>'+
+      '<text x="256" y="342" font-family="Georgia,serif" font-size="270" fill="#DFA13C" text-anchor="middle">\u20B9</text></svg>');
+    var m={name:'Creditors Ledger',short_name:'Creditors',start_url:'.',display:'standalone',
+      background_color:'#EFF3F2',theme_color:'#0F2E38',
+      icons:[{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}]};
+    var l=document.createElement('link'); l.rel='manifest';
+    l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));
+    document.head.appendChild(l);
+    var t=document.createElement('link'); t.rel='apple-touch-icon'; t.href=icon;
+    document.head.appendChild(t);
+  }catch(e){}
+}
+
+function renderAll(){
+  if(ui.tab==='balance') renderBalance();
+  if(ui.tab==='ledger') renderLedger();
+  if(ui.tab==='register') renderRegister();
+  if(ui.tab==='daily') renderDaily();
+  if(ui.tab==='parties') renderParties();
+  if(ui.tab==='data') renderData();
+}
+function goTab(t){
+  if(!can(t)) t=ROLES[role].tabs[0];
+  ui.tab=t;
+  ['balance','ledger','register','daily','parties','data'].forEach(function(x){
+    $('#t-'+x).setAttribute('aria-selected',String(x===t));
+    $('#p-'+x).hidden=(x!==t)});
+  renderAll();
+}
+function msg(sel,text,cls){var e=$(sel); e.textContent=text; e.className='msg'+(cls?' '+cls:'')}
+
+/* ---------- events ---------- */
+function bind(){
+  ['balance','ledger','register','daily','parties','data'].forEach(function(t){
+    $('#t-'+t).addEventListener('click',function(){goTab(t)})});
+
+  $('#fy').addEventListener('change',function(e){setYear(e.target.value,null);
+    msg('#carryMsg',''); renderAll()});
+  $('#ason').addEventListener('change',function(e){ if(!e.target.value)return;
+    ui.ason=clamp(e.target.value,fyStart(ui.fy),fyEnd(ui.fy)); e.target.value=ui.ason; renderBalance()});
+  $('#asonEnd').addEventListener('click',function(){
+    ui.ason=fyEnd(ui.fy); $('#ason').value=ui.ason; renderBalance()});
+  $('#dayDate').addEventListener('change',function(e){ if(!e.target.value)return;
+    ui.day=clamp(e.target.value,fyStart(ui.fy),fyEnd(ui.fy)); e.target.value=ui.day; renderDaily()});
+  $('#regMonth').addEventListener('change',function(e){ui.regMonth=e.target.value; renderRegister()});
+  $('#regSeg').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-type]'); if(!b)return;
+    ui.regType=b.dataset.type;
+    Array.prototype.forEach.call($('#regSeg').querySelectorAll('button'),function(x){
+      x.setAttribute('aria-pressed',String(x===b))});
+    renderRegister();
+  });
+  $('#retry').addEventListener('click',function(){queueSave()});
+
+  $('#regGrid').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-open]'); if(!b)return;
+    ui.ledParty=Number(b.dataset.open); goTab('ledger');
+  });
+  $('#regGrid').addEventListener('change',function(e){
+    var i=e.target.closest('input[data-date]'); if(!i)return;
+    var r=parseAmount(i.value);
+    if(!r.ok){ alert(r.msg); renderRegister(); return }
+    var d=i.dataset.date, pid=Number(i.dataset.party), es=cellEntries(d,pid,ui.regType);
+    if(ROLES[role].types.indexOf(ui.regType)<0){ renderRegister(); return }
+    if(r.v){
+      if(es.length){ es[0].amount=r.v; es[0].by=role }
+      else state.entries.push({id:nextId++,date:d,partyId:pid,type:ui.regType,amount:r.v,ref:'',note:'',by:role});
+    }else if(es.length){
+      state.entries.splice(state.entries.indexOf(es[0]),1);
+    }
+    queueSave(); renderRegister();
+  });
+
+  $('#ledParty').addEventListener('change',function(e){ui.ledParty=Number(e.target.value); renderLedger()});
+  $('#balBody').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-party]'); if(!b)return;
+    ui.ledParty=Number(b.dataset.party); goTab('ledger');
+  });
+  $('#ledBody').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-rm]'); if(!b)return;
+    var id=Number(b.dataset.rm);
+    var x=null; state.entries.forEach(function(en){if(en.id===id)x=en});
+    if(!x)return;
+    if(!confirm('Delete this '+TYPES[x.type].label.toLowerCase()+' of '+
+      Math.round(x.amount).toLocaleString('en-IN')+' dated '+dmy(x.date)+'?')) return;
+    state.entries.splice(state.entries.indexOf(x),1);
+    queueSave(); renderLedger();
+  });
+
+  $('#txAdd').addEventListener('click',function(){
+    var p=partyById(ui.ledParty);
+    if(!p){msg('#txMsg','Add a supplier first.','err');return}
+    var d=$('#txDate').value;
+    if(!d){msg('#txMsg','Pick a date.','err');return}
+    if(d<fyStart(ui.fy)||d>fyEnd(ui.fy)){msg('#txMsg','That date is outside FY '+ui.fy+'.','err');return}
+    var r=parseAmount($('#txAmt').value);
+    if(!r.ok){msg('#txMsg',r.msg,'err');return}
+    if(!r.v){msg('#txMsg','Enter an amount greater than zero.','err');return}
+    if(d>today && !confirm('That date is in the future. Add it anyway?')) return;
+    var t=$('#txType').value;
+    state.entries.push({id:nextId++,date:d,partyId:p.id,type:t,amount:r.v,
+      ref:$('#txRef').value.trim(),note:$('#txNote').value.trim(),by:role});
+    $('#txAmt').value=''; $('#txRef').value=''; $('#txNote').value='';
+    msg('#txMsg',TYPES[t].label+' of '+Math.round(r.v).toLocaleString('en-IN')+
+      ' added for '+p.name+' on '+dmy(d)+'.','ok');
+    queueSave(); renderLedger();
+  });
+
+  $('#partiesBody').addEventListener('change',function(e){
+    var i=e.target.closest('input[data-op]'); if(!i)return;
+    var p=partyById(Number(i.dataset.op)); if(!p)return;
+    var n=Number(i.value);
+    if(!isFinite(n)){alert('Opening balance must be a number.'); renderParties(); return}
+    p.openings=p.openings||{}; p.openings[ui.fy]=Math.round(n*100)/100;
+    queueSave(); renderParties();
+  });
+  $('#partiesBody').addEventListener('click',function(e){
+    var b=e.target.closest('button[data-del]'); if(!b)return;
+    var id=Number(b.dataset.del), p=partyById(id);
+    var n=state.entries.filter(function(x){return x.partyId===id}).length;
+    if(!confirm('Remove '+p.name+' and its '+n+' entries across all years?\n\nDownload a backup first if you are unsure.')) return;
+    state.parties=state.parties.filter(function(x){return x.id!==id});
+    state.entries=state.entries.filter(function(x){return x.partyId!==id});
+    if(ui.ledParty===id) ui.ledParty=state.parties.length?state.parties[0].id:null;
+    queueSave(); renderParties();
+  });
+  $('#addParty').addEventListener('click',function(){
+    var name=$('#newName').value.trim();
+    if(!name){msg('#addMsg','Enter a name.','err'); $('#newName').focus(); return}
+    if(state.parties.some(function(p){return p.name.toLowerCase()===name.toLowerCase()})){
+      msg('#addMsg',name+' is already on the list.','err'); return}
+    var n=Number($('#newOp').value)||0;
+    var p={id:nextId++,name:name,openings:{}}; p.openings[ui.fy]=Math.round(n*100)/100;
+    state.parties.push(p);
+    if(!ui.ledParty) ui.ledParty=p.id;
+    $('#newName').value=''; $('#newOp').value='';
+    msg('#addMsg',name+' added.','ok');
+    queueSave(); renderParties();
+  });
+  $('#carry').addEventListener('click',function(){
+    var i=FY_LIST.indexOf(ui.fy);
+    if(i===FY_LIST.length-1){msg('#carryMsg',ui.fy+' is the last year in the list.','err');return}
+    var nx=FY_LIST[i+1];
+    var rows=allRows(fyEnd(ui.fy),ui.fy);
+    var prev=rows.filter(function(r){return op(r.p,nx)}).length;
+    if(!confirm('Set every opening balance for '+nx+' from the closing balance of '+ui.fy+'?'+
+      (prev?'\n\n'+prev+' supplier(s) already have an opening balance for '+nx+' and will be replaced.':''))) return;
+    rows.forEach(function(r){r.p.openings=r.p.openings||{};
+      r.p.openings[nx]=Math.round(r.bal*100)/100});
+    queueSave(); msg('#carryMsg','Opening balances for '+nx+' updated from '+ui.fy+'.','ok'); renderParties();
+  });
+
+  $('#xlDown').addEventListener('click',exportXlsx);
+  $('#pinSave').addEventListener('click',function(){
+    var who=$('#pinWho').value, a=$('#pinNew').value.trim(), b=$('#pinNew2').value.trim();
+    if(!/^\d{4,12}$/.test(a)){msg('#pinMsg','Use 4 to 12 digits.','err');return}
+    if(a!==b){msg('#pinMsg','The two PINs do not match.','err');return}
+    if(who==='entry'&&pinHash(a)===pins().admin){msg('#pinMsg','That is already the owner PIN.','err');return}
+    if(who==='admin'&&pinHash(a)===pins().entry){msg('#pinMsg','That is already the data-entry PIN.','err');return}
+    pins()[who]=pinHash(a);
+    $('#pinNew').value=''; $('#pinNew2').value='';
+    msg('#pinMsg',(who==='admin'?'Owner':'Data entry')+' PIN updated.','ok');
+    queueSave();
+  });
+  $('#expYear').addEventListener('click',function(){exportCsv(false)});
+  $('#expAll').addEventListener('click',function(){exportCsv(true)});
+  $('#bkDown').addEventListener('click',function(){
+    download(JSON.stringify({app:'creditors',version:3,saved:new Date().toISOString(),
+      parties:state.parties,entries:state.entries,pins:state.pins},null,1),
+      'application/json','creditors-backup-'+today+'.json');
+    msg('#bkMsg','Backup downloaded. Keep it somewhere safe.','ok');
+  });
+  $('#bkUpBtn').addEventListener('click',function(){$('#bkUp').click()});
+  $('#bkUp').addEventListener('change',function(e){
+    var f=e.target.files&&e.target.files[0]; if(!f)return;
+    var rd=new FileReader();
+    rd.onload=function(){
+      var d;
+      try{ d=normalise(JSON.parse(rd.result)) }catch(err){ d=null }
+      if(!d){msg('#bkMsg','That file could not be read as a backup.','err'); return}
+      if(!confirm('Replace everything currently in the app with this backup?\n\n'+
+        d.parties.length+' suppliers, '+d.entries.length+' entries.')) return;
+      state=d;
+      var ids=[0];
+      state.parties.forEach(function(p){ids.push(p.id)});
+      state.entries.forEach(function(x){ids.push(x.id)});
+      nextId=1+Math.max.apply(null,ids);
+      buildFyList();
+      $('#fy').innerHTML=FY_LIST.map(function(x){return '<option>'+x+'</option>'}).join('');
+      if(FY_LIST.indexOf(ui.fy)<0) ui.fy=FY_LIST[0];
+      $('#fy').value=ui.fy;
+      ui.ledParty=state.parties.length?state.parties[0].id:null;
+      setYear(ui.fy,null);
+      msg('#bkMsg','Restored '+d.parties.length+' suppliers and '+d.entries.length+' entries.','ok');
+      queueSave(); renderAll();
+    };
+    rd.readAsText(f); e.target.value='';
+  });
+  $('#resetAll').addEventListener('click',function(){
+    if(!confirm('This wipes your changes and reloads the original spreadsheet data.\n\nDownload a backup first if you need one. Continue?')) return;
+    if(prompt('Type RESET to confirm.')!=='RESET'){msg('#resetMsg','Reset cancelled.','');return}
+    seedState(); buildFyList();
+    $('#fy').innerHTML=FY_LIST.map(function(x){return '<option>'+x+'</option>'}).join('');
+    ui.fy='2026-27'; $('#fy').value=ui.fy;
+    ui.ledParty=state.parties[0].id;
+    setYear(ui.fy,null); queueSave(); renderAll();
+    msg('#resetMsg','Original data restored.','ok');
+  });
+}
+
+boot();
+})();
+</script>

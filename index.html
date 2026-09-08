@@ -205,6 +205,7 @@
       <div class="fld"><label for="fy">Financial year</label><select id="fy"></select></div>
       <div class="fld"><label for="ason">Balance as on</label><input type="date" id="ason"></div>
       <button class="btn ghost" id="asonEnd">Year end</button>
+      <button class="btn gold" id="installBtn" hidden>Install app</button>
     </div>
   </div>
   <div class="tabs" role="tablist">
@@ -1040,22 +1041,51 @@ function download(text,mime,name){
   setTimeout(function(){URL.revokeObjectURL(u)},1000);
 }
 
-/* ---------- installable manifest ---------- */
+/* ---------- installable app ----------
+   A browser only offers "Install" when the page is served over https and has a
+   manifest plus a service worker. Opened straight from disk (file://) none of
+   that applies, so the button simply stays hidden and the app still works. */
+var deferredPrompt=null;
+function hosted(){return location.protocol==='http:'||location.protocol==='https:'}
 function installManifest(){
   try{
     var icon='data:image/svg+xml;utf8,'+encodeURIComponent(
       '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">'+
       '<rect width="512" height="512" rx="96" fill="#0F2E38"/>'+
       '<text x="256" y="342" font-family="Georgia,serif" font-size="270" fill="#DFA13C" text-anchor="middle">\u20B9</text></svg>');
-    var m={name:'Creditors Ledger',short_name:'Creditors',start_url:'.',display:'standalone',
-      background_color:'#EFF3F2',theme_color:'#0F2E38',
-      icons:[{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any maskable'}]};
-    var l=document.createElement('link'); l.rel='manifest';
-    l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));
-    document.head.appendChild(l);
     var t=document.createElement('link'); t.rel='apple-touch-icon'; t.href=icon;
     document.head.appendChild(t);
+
+    var l=document.createElement('link'); l.rel='manifest';
+    if(hosted()){
+      // use the real file from the app bundle when one is served alongside
+      l.href='manifest.webmanifest';
+    }else{
+      var m={name:'Creditors Ledger',short_name:'Creditors',start_url:'.',display:'standalone',
+        background_color:'#EFF3F2',theme_color:'#0F2E38',
+        icons:[{src:icon,sizes:'512x512',type:'image/svg+xml',purpose:'any'}]};
+      l.href=URL.createObjectURL(new Blob([JSON.stringify(m)],{type:'application/json'}));
+    }
+    document.head.appendChild(l);
+
+    if(hosted()&&'serviceWorker' in navigator){
+      navigator.serviceWorker.register('sw.js').catch(function(){});
+    }
   }catch(e){}
+
+  window.addEventListener('beforeinstallprompt',function(e){
+    e.preventDefault(); deferredPrompt=e;
+    var b=$('#installBtn'); if(b) b.hidden=false;
+  });
+  window.addEventListener('appinstalled',function(){
+    deferredPrompt=null; var b=$('#installBtn'); if(b) b.hidden=true;
+  });
+  var ib=$('#installBtn');
+  if(ib) ib.addEventListener('click',function(){
+    if(!deferredPrompt) return;
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(function(){deferredPrompt=null; ib.hidden=true});
+  });
 }
 
 function renderAll(){

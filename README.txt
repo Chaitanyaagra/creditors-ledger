@@ -127,6 +127,57 @@ WHAT THIS PROTECTS YOU FROM, AND WHAT IT DOES NOT
   gets in, and losing the file no longer means losing the data. Say the word
   and it can be changed over.
 
+DARK MODE
+---------
+Follows your phone or laptop's own setting. Nothing to switch.
+
+
+DELETING AN ENTRY
+-----------------
+Deleting a purchase or payment happens straight away and shows an "Undo" for
+eight seconds, rather than asking first. Removing a supplier and resetting the
+app still ask, because those cannot be taken back the same way.
+
+
+LOCKING
+-------
+By default the app locks the moment you leave it - close the window, switch to
+another app, minimise it - and asks for the PIN again when you come back.
+
+On a laptop, where you may be flicking to Excel and back all day, that gets
+tiresome. The owner can loosen it on the Data tab, under Users:
+
+  The moment I leave the app     (default)
+  After 30 seconds away
+  After 2 minutes away
+  Only when the app is closed
+
+Whichever you pick, you are also signed out after 15 minutes of nothing
+happening, so the app left open on a shared computer does not stay unlocked.
+The setting travels with the ledger, so both devices behave the same way.
+
+
+THINGS THE APP WILL TELL YOU ABOUT
+----------------------------------
+  "Storage is full"          it stops retrying instead of looping forever.
+                             Download a backup, then clear space.
+  "Your saved data could not be read"
+                             shown at sign-in. Sample figures appear but
+                             NOTHING is overwritten and saving stays paused
+                             until you say so. Download the unreadable file
+                             from that screen first - it may be recoverable.
+  "Opening balance no longer matches..."
+                             you changed something in last year after carrying
+                             balances forward. Open Parties and carry again.
+  "An identical ... already exists"
+                             a same party, date, type and amount entry is
+                             already there. Usually a double tap.
+  "Anonymous sign-in is not enabled"
+                             cloud setup step 4 was skipped.
+  "Database rules refused access"
+                             cloud setup step 3 was skipped.
+
+
 BACKUPS
 -------
 Everything is stored in the browser. Clearing browsing data will erase it.
@@ -141,8 +192,13 @@ WHAT IS IN EACH SCREEN
                 old the unpaid bills are. Click a name to open its ledger.
   Party ledger  one supplier's full year, running balance, and a form to add
                 an entry with bill number and remark
-  Register      the month grid, one row per supplier - closest to the old
-                spreadsheet. Amber cells hold more than one entry that day.
+  Register      two ways in. "Month grid" is the old spreadsheet layout, one
+                row per supplier across the month - best on a laptop. "One day"
+                picks a date and gives each supplier a single big box, which is
+                what you want on a phone; it also shows what each supplier is
+                owed as you go. Phones open in day mode, laptops in grid mode,
+                and you can switch either way. Amber boxes hold more than one
+                entry that day - tap to open the ledger.
   Daily         everything that happened on one date
   Parties       add or remove suppliers, opening balances, carry forward
   Data          year summary, Excel, backup, restore, PINs
@@ -158,10 +214,26 @@ An opening balance is treated as dated 1 April. If it carries bills older than
 that, their real age is understated.
 
 
+WHICH COPY AM I LOOKING AT?
+---------------------------
+The build number sits under the title in the header, and again on the Data tab.
+This bundle is build 12. If something described to you is missing from the
+screen, you are on an older copy - replace index.html and reload.
+
+Cloud sync arrived in build 9, locking on exit in build 10,
+the phone-friendly layout in build 11,
+dark mode and undo in build 12.
+
+
 UPDATING LATER
 --------------
-Replace index.html, change  CACHE = 'creditors-v9'  in sw.js to 'creditors-v10',
-and drag the folder to Netlify Drop again.
+Replace index.html, change  CACHE = 'creditors-v13'  in sw.js to the next
+number, and drag the folder to Netlify Drop again.
+
+If you already installed the app and it still looks old after an upload, the
+old service worker is serving the cached copy. Close every window of the app
+and reopen it, twice if needed. Build 9 onward's service worker fetches index.html
+from the network first, so from now on updates land on the next reload.
 
 
 FILES

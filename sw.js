@@ -5,7 +5,7 @@
    the manifest are cache-first because they rarely change.
 
    Bump CACHE when you upload a new index.html. */
-const CACHE = 'creditors-v9';
+const CACHE = 'creditors-v13';
 const SHELL = './index.html';
 const FILES = [
   './', SHELL, './manifest.webmanifest',

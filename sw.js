@@ -1,7 +1,7 @@
 /* Creditors Ledger - offline shell.
    Caches the app files on first visit so it opens with no network afterwards.
    Bump CACHE when you upload a new index.html. */
-const CACHE = 'creditors-v3';
+const CACHE = 'creditors-v4';
 const FILES = [
   './', './index.html', './manifest.webmanifest',
   './icon-192.png', './icon-512.png', './apple-touch-icon.png'

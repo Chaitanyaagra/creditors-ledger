@@ -161,6 +161,74 @@
     .aging .big{font-size:23px}
   }
 
+  /* ---- logo ---- */
+  .logo{display:block;flex:0 0 auto}
+  .mast .brand{display:flex;align-items:center;gap:13px}
+  .gate .logo{margin:0 auto 14px}
+
+  /* ---- horizontal, swipeable tab row ---- */
+  .tabs{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tabs::-webkit-scrollbar{display:none}
+  .tab{white-space:nowrap;flex:0 0 auto}
+
+  /* ---- search ---- */
+  .search{position:relative;margin-bottom:14px}
+  .search input{width:100%;max-width:320px;padding:8px 12px;font-size:14px;
+    border:1px solid var(--rule-2);border-radius:3px;background:var(--card)}
+
+  /* ---- donut ---- */
+  .agewrap{display:flex;gap:20px;align-items:center;flex-wrap:wrap}
+  .agewrap .figs{flex:1 1 200px;display:flex;gap:26px;flex-wrap:wrap}
+
+  /* ---- toasts ---- */
+  .toasts{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;z-index:60;
+    display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none;
+    width:calc(100% - 32px);max-width:430px}
+  .toast{background:var(--deep);color:#EAF2F1;font-size:13.5px;line-height:1.4;
+    padding:11px 16px;border-radius:5px;box-shadow:0 6px 20px rgba(15,46,56,.3);
+    border-left:3px solid var(--gold);pointer-events:auto;width:100%;
+    animation:tin .18s ease-out}
+  .toast.ok{border-left-color:#4BB98C}
+  .toast.err{border-left-color:#E0655A}
+  @keyframes tin{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:none}}
+  @media(prefers-reduced-motion:reduce){.toast{animation:none}}
+
+  /* ---- tables become cards on a phone ---- */
+  @media(max-width:640px){
+    .cards .wide,.wide{overflow:visible}
+    .cards table{min-width:0;width:100%}
+    .cards caption{padding:12px 2px 10px;border:0;background:transparent}
+    .cards thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+    .cards table,.cards tbody,.cards tr,.cards td,.cards th{display:block;width:auto}
+    .cards tbody tr{background:var(--card)!important;border:1px solid var(--rule);
+      border-radius:5px;margin:0 0 10px;padding:11px 13px}
+    .cards tbody tr.sum{border:1px solid var(--deep)}
+    .cards tbody th{padding:0 0 8px;font-family:var(--serif);font-size:16.5px;
+      border-bottom:1px solid var(--rule);margin-bottom:7px;background:transparent!important}
+    .cards tbody td{display:flex;justify-content:space-between;align-items:baseline;gap:16px;
+      text-align:right;padding:3px 0;border:0;background:transparent!important}
+    .cards tbody td::before{content:attr(data-label);color:var(--soft);font-size:12px;
+      font-weight:500;text-align:left;flex:0 0 auto}
+    .cards tbody td.blank{display:none}
+    .cards .card{border:0;box-shadow:none;background:transparent}
+  }
+
+  /* ---- print ---- */
+  @media print{
+    body{background:#FFF}
+    .mast,.tabs,.form,.search,.actions,.btn,.toasts,.gate,.msg,.savepill,.status{display:none!important}
+    .app{background:#FFF;padding:0}
+    .pane{padding:0;max-width:none}
+    .card{border:0;box-shadow:none}
+    .wide{overflow:visible} .wide table{min-width:0;width:100%}
+    table{font-size:10.5pt} th,td{padding:4px 6px}
+    thead th{background:#EEE!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+    .aging{border:1px solid #999;page-break-inside:avoid}
+    tr{page-break-inside:avoid}
+    .pill,.tag{background:transparent!important;padding:0}
+    caption{font-size:13pt}
+  }
+
   /* sign in */
   .gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
     padding:24px;background:linear-gradient(158deg,var(--deep),var(--deep-2));font-family:var(--sans)}
@@ -181,8 +249,11 @@
   .who .chip{background:rgba(223,161,60,.2);color:var(--gold);padding:2px 9px;border-radius:10px;font-weight:600}
 </style>
 
+<div class="toasts" id="toasts"></div>
+
 <div class="gate" id="gate">
   <div class="box">
+<svg class="logo" width="54" height="54" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#0F2E38"/><text x="32" y="44" font-family="Georgia,serif" font-size="36" fill="#DFA13C" text-anchor="middle">&#8377;</text></svg>
     <h2>Creditors Ledger</h2>
     <p class="lead">Enter your PIN to continue.</p>
     <label for="pin">PIN</label>
@@ -196,10 +267,13 @@
 <div class="app">
 <header class="mast">
   <div class="mi">
-    <div>
+    <div class="brand">
+      <svg class="logo" width="42" height="42" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="12" fill="rgba(255,255,255,.1)"/><text x="32" y="44" font-family="Georgia,serif" font-size="36" fill="#DFA13C" text-anchor="middle">&#8377;</text></svg>
+      <div>
       <h1>Creditors <span class="m">Ledger</span></h1>
       <p class="sub" id="sub">Suppliers you buy from &mdash; what you owe and how old it is</p>
       <div class="who" id="who" style="margin-top:7px"></div>
+      </div>
     </div>
     <div class="ctrls">
       <div class="fld"><label for="fy">Financial year</label><select id="fy"></select></div>
@@ -222,7 +296,8 @@
 <section class="pane" id="p-balance" role="tabpanel">
   <div id="lagFlag"></div>
   <div class="aging" id="agingBox"></div>
-  <div class="card wide">
+  <div class="search"><input type="search" id="balSearch" placeholder="Search supplier…" aria-label="Search supplier"></div>
+  <div class="cards"><div class="card wide">
     <table id="balTable">
       <caption id="balCap">Balance</caption>
       <thead><tr>
@@ -234,7 +309,7 @@
       </tr></thead>
       <tbody id="balBody"></tbody>
     </table>
-  </div>
+  </div></div>
   <p class="note">
     You owe = opening + purchase + credit note &minus; payment &minus; debit note.
     Payments are applied to the oldest bill first, so &ldquo;oldest unpaid&rdquo; is the age of the
@@ -292,12 +367,12 @@
 <!-- DAILY -->
 <section class="pane" id="p-daily" role="tabpanel" hidden>
   <div class="ctl"><div class="fld"><label for="dayDate">Date</label><input type="date" id="dayDate"></div></div>
-  <div class="card wide"><table id="dayTable">
+  <div class="cards"><div class="card wide"><table id="dayTable">
     <caption id="dayCap">Activity</caption>
     <thead><tr><th>Party</th><th class="addcol">Purchase</th><th class="addcol">Credit note</th>
       <th class="cutcol edge">Payment</th><th class="cutcol">Debit note</th><th class="edge">Owed to date</th></tr></thead>
     <tbody id="dayBody"></tbody>
-  </table></div>
+  </table></div></div>
   <p class="note" id="dayNote"></p>
 </section>
 
@@ -311,12 +386,13 @@
     <button class="btn" id="addParty">Add supplier</button>
   </div>
   <p class="msg" id="addMsg"></p>
-  <div class="card wide"><table>
+  <div class="search"><input type="search" id="partySearch" placeholder="Search supplier…" aria-label="Search supplier"></div>
+  <div class="cards"><div class="card wide"><table>
     <caption id="partiesCap">Suppliers</caption>
     <thead><tr><th>Party</th><th id="opHead">Opening</th><th>Closing</th>
       <th>Entries this year</th><th>Oldest unpaid</th><th></th></tr></thead>
     <tbody id="partiesBody"></tbody>
-  </table></div>
+  </table></div></div>
   <p class="note">
     The opening balance belongs to the selected year only. It is treated as dated 1 April, so if it
     carries older bills their real age is understated.
@@ -390,9 +466,10 @@ var ADDS=['purchase','credit'], CUTS=['payment','debit'];
 var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 var state={parties:[],entries:[]};
-var ui={tab:'balance',fy:'',regType:'payment',regMonth:'',ason:'',day:'',ledParty:null};
+var ui={tab:'balance',fy:'',regType:'payment',regMonth:'',ason:'',day:'',ledParty:null,q:'',qp:''};
 var nextId=1, FY_LIST=[];
 var role=null;
+var EPS=0.05;   // paise-level tolerance for float noise
 
 /* roles: what each PIN unlocks */
 var ROLES={
@@ -459,9 +536,10 @@ function mDays(ym){return new Date(Number(ym.slice(0,4)),Number(ym.slice(5,7)),0
 function dmy(d){return d.split('-').reverse().join('-')}
 function clamp(d,lo,hi){return d<lo?lo:(d>hi?hi:d)}
 function gap(a,b){return Math.round((new Date(b)-new Date(a))/86400000)}
-function fmt(n){if(!n||Math.abs(n)<0.5)return '\u2013';
-  var s=Math.round(Math.abs(n)).toLocaleString('en-IN');return n<0?'('+s+')':s}
-function cell(n){return n?Math.round(n).toLocaleString('en-IN'):''}
+function fmt(n){if(!n||Math.abs(n)<0.005)return '\u2013';
+  var s=num(Math.abs(n));return n<0?'('+s+')':s}
+function num(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2})}
+function cell(n){return n?num(n):''}
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function op(p,f){return (p.openings&&p.openings[f])||0}
@@ -478,21 +556,35 @@ function parseAmount(raw){
   return {ok:true,v:Math.round(n*100)/100};
 }
 
-/* ---------- save ---------- */
-var saveTimer=null, lastFail=false;
+/* ---------- save ----------
+   Every change schedules a save; on top of that a heartbeat runs every 10
+   seconds and re-tries anything that did not get through. */
+var saveTimer=null, lastFail=false, dirty=false, saving=false;
 function setStat(cls,txt){var e=$('#stat');if(!e)return;
   e.className='status '+cls; $('#statTxt').textContent=txt;
   $('#retry').hidden = (cls!=='failed');}
 function queueSave(){
-  clearTimeout(saveTimer); setStat('saving','Saving\u2026');
+  dirty=true; clearTimeout(saveTimer); setStat('saving','Saving\u2026');
   saveTimer=setTimeout(doSave,300);
 }
 function doSave(){
-  return store.set(KEY,JSON.stringify(state)).then(function(){
-    lastFail=false; setStat('saved','All changes saved');
+  if(saving) return Promise.resolve();
+  saving=true;
+  var snap=JSON.stringify(state);
+  return store.set(KEY,snap).then(function(){
+    saving=false; dirty=false; lastFail=false;
+    setStat('saved','All changes saved \u00b7 '+new Date().toLocaleTimeString('en-IN',
+      {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
   }).catch(function(){
-    lastFail=true; setStat('failed','Not saved');
+    saving=false; lastFail=true;
+    setStat('failed','Not saved \u2014 retrying');
   });
+}
+function startHeartbeat(){
+  setInterval(function(){ if(dirty||lastFail) doSave() },10000);
+  document.addEventListener('visibilitychange',function(){
+    if(document.visibilityState==='hidden'&&(dirty||lastFail)) doSave()});
+  window.addEventListener('pagehide',function(){ if(dirty||lastFail) doSave() });
 }
 
 /* ---------- seed / load ---------- */
@@ -558,7 +650,7 @@ function boot(){
     $('#fy').innerHTML=FY_LIST.map(function(f){return '<option>'+f+'</option>'}).join('');
     $('#fy').value=ui.fy;
     setYear(ui.fy,last);
-    bind(); installManifest(); bindGate(); doSave();
+    bind(); installManifest(); bindGate(); startHeartbeat(); doSave();
   });
 }
 
@@ -650,9 +742,9 @@ function ageing(p,f,asOn){
   for(var i=0;i<bills.length;i++){
     var take=Math.min(credit,bills[i].amt);
     bills[i].paid=take; bills[i].open=bills[i].amt-take; credit-=take;
-    if(bills[i].id) paidUpto[bills[i].id]= bills[i].open<0.5 ? 'paid' : (take>0.5?'part':'open');
+    if(bills[i].id) paidUpto[bills[i].id]= bills[i].open<EPS ? 'paid' : (take>EPS?'part':'open');
   }
-  var openBills=bills.filter(function(b){return b.open>0.5});
+  var openBills=bills.filter(function(b){return b.open>EPS});
   var advance=credit;
   var bal=o+t.purchase+t.credit-t.payment-t.debit;
   var buckets=[0,0,0,0];
@@ -664,6 +756,7 @@ function ageing(p,f,asOn){
           buckets:buckets,advance:advance,status:paidUpto};
 }
 function allRows(asOn,f){return state.parties.map(function(p){return ageing(p,f,asOn)})}
+function matches(name,q){return !q||name.toLowerCase().indexOf(q.toLowerCase())>=0}
 function lastDate(types,f){
   var lo=fyStart(f),hi=fyEnd(f),d=null;
   state.entries.forEach(function(e){
@@ -682,41 +775,49 @@ function renderBalance(){
     $('#agingBox').innerHTML=''; $('#lagFlag').innerHTML=''; return;
   }
   var rows=allRows(d,f);
+  var shown=rows.filter(function(r){return matches(r.p.name,ui.q)});
   var tot={o:0,pur:0,cr:0,pay:0,dr:0,bal:0},bk=[0,0,0,0],adv=0;
-  var html=rows.map(function(r){
+  var html=shown.map(function(r){
     tot.o+=r.o;tot.pur+=r.pur;tot.cr+=r.cr;tot.pay+=r.pay;tot.dr+=r.dr;tot.bal+=r.bal;
-    r.buckets.forEach(function(v,i){bk[i]+=v}); adv+=r.advance;
-    var cls=r.bal>0.5?'due':(r.bal<-0.5?'adv':'zero');
+
+    var cls=r.bal>EPS?'due':(r.bal<-EPS?'adv':'zero');
     var age='<span class="soft2">\u2013</span>';
     if(r.days!==null){
       var k=r.days<=30?0:r.days<=60?1:r.days<=90?2:3;
       age='<span class="tag '+BK[k][2]+'">'+r.days+' d</span>';
-    }else if(r.bal<-0.5){ age='<span class="tag o1">advance</span>' }
-    return '<tr><td><button class="plink" data-party="'+r.p.id+'">'+esc(r.p.name)+'</button></td>'+
-      '<td class="soft2">'+fmt(r.o)+'</td>'+
-      '<td class="addcol">'+fmt(r.pur)+'</td><td class="addcol soft2">'+fmt(r.cr)+'</td>'+
-      '<td class="cutcol edge">'+fmt(r.pay)+'</td><td class="cutcol soft2">'+fmt(r.dr)+'</td>'+
-      '<td class="edge"><span class="pill '+cls+'">'+fmt(r.bal)+'</span></td>'+
-      '<td>'+age+'</td></tr>';
+    }else if(r.bal<-EPS){ age='<span class="tag o1">advance</span>' }
+    function c(lab,val,cl){return '<td data-label="'+lab+'" class="'+(cl||'')+
+      (val==='\u2013'?' blank':'')+'">'+val+'</td>'}
+    return '<tr><th><button class="plink" data-party="'+r.p.id+'">'+esc(r.p.name)+'</button></th>'+
+      c('Opening',fmt(r.o),'soft2')+
+      c('Purchase',fmt(r.pur),'addcol')+c('Credit note',fmt(r.cr),'addcol soft2')+
+      c('Payment',fmt(r.pay),'cutcol edge')+c('Debit note',fmt(r.dr),'cutcol soft2')+
+      '<td data-label="You owe" class="edge"><span class="pill '+cls+'">'+fmt(r.bal)+'</span></td>'+
+      '<td data-label="Oldest unpaid">'+age+'</td></tr>';
   }).join('');
-  html+='<tr class="sum"><th>Total</th><td>'+fmt(tot.o)+'</td><td class="addcol">'+fmt(tot.pur)+
-    '</td><td class="addcol">'+fmt(tot.cr)+'</td><td class="cutcol edge">'+fmt(tot.pay)+
-    '</td><td class="cutcol">'+fmt(tot.dr)+'</td><td class="edge '+
-    (tot.bal>0.5?'due':tot.bal<-0.5?'adv':'')+'">'+fmt(tot.bal)+'</td><td></td></tr>';
-  $('#balBody').innerHTML=html;
+  html+='<tr class="sum"><th>Total'+(ui.q?' (filtered)':'')+'</th><td data-label="Opening">'+fmt(tot.o)+
+    '</td><td data-label="Purchase" class="addcol">'+fmt(tot.pur)+
+    '</td><td data-label="Credit note" class="addcol">'+fmt(tot.cr)+
+    '</td><td data-label="Payment" class="cutcol edge">'+fmt(tot.pay)+
+    '</td><td data-label="Debit note" class="cutcol">'+fmt(tot.dr)+
+    '</td><td data-label="You owe" class="edge '+
+    (tot.bal>EPS?'due':tot.bal<-EPS?'adv':'')+'">'+fmt(tot.bal)+'</td><td class="blank"></td></tr>';
+  $('#balBody').innerHTML= shown.length?html
+    :'<tr><td colspan="8"><div class="empty">No supplier matches \u201c'+esc(ui.q)+'\u201d.</div></td></tr>';
 
+  shown.forEach(function(r){r.buckets.forEach(function(v,i){bk[i]+=v}); adv+=r.advance});
   var outst=bk[0]+bk[1]+bk[2]+bk[3];
-  var seg=BK.map(function(b,i){
-    return outst?'<span style="width:'+(100*bk[i]/outst)+'%;background:'+b[1]+'"></span>':''}).join('');
   var keys=BK.map(function(b,i){
     return '<span><i style="background:'+b[1]+'"></i>'+b[0]+'<b>'+fmt(bk[i])+'</b></span>'}).join('');
   $('#agingBox').innerHTML=
-    '<div class="hd"><div><div class="lbl">Total outstanding to suppliers</div>'+
-    '<div class="big'+(outst?'':' ok')+'">\u20B9 '+(outst?Math.round(outst).toLocaleString('en-IN'):'0')+'</div></div>'+
-    '<div style="text-align:right"><div class="lbl">Paid in advance</div>'+
-    '<div class="big ok">\u20B9 '+Math.round(adv).toLocaleString('en-IN')+'</div></div></div>'+
-    (outst?'<div class="bar">'+seg+'</div><div class="keys">'+keys+'</div>'
-          :'<p class="note" style="margin:0">Nothing outstanding on this date.</p>');
+    '<div class="agewrap">'+donut(bk,BK.map(function(b){return b[1]}))+
+    '<div class="figs"><div><div class="lbl">Total outstanding'+
+    (ui.q?' \u2014 suppliers matching \u201c'+esc(ui.q)+'\u201d':' to suppliers')+'</div>'+
+    '<div class="big'+(outst?'':' ok')+'">\u20B9 '+(outst?num(outst):'0')+'</div></div>'+
+    '<div><div class="lbl">Paid in advance</div>'+
+    '<div class="big ok">\u20B9 '+num(adv)+'</div></div></div></div>'+
+    (outst?'<div class="keys">'+keys+'</div>'
+          :'<p class="note" style="margin:12px 0 0">Nothing outstanding on this date.</p>');
 
   var lp=lastDate(ADDS,f), lpay=lastDate(CUTS,f);
   $('#lagFlag').innerHTML=(lp&&lpay&&lp<lpay&&lp<d)
@@ -739,8 +840,8 @@ function renderLedger(){
   var yr=ageing(p,f,hi);         // table footer covers the whole year
   $('#ledCap').textContent=p.name+'  \u00b7  FY '+f;
   $('#ledHead').innerHTML='<div class="aging"><div class="hd">'+
-    '<div><div class="lbl">You owe as on '+dmy(on)+'</div><div class="big'+(a.bal>0.5?'':' ok')+'">\u20B9 '+
-    Math.round(Math.abs(a.bal)).toLocaleString('en-IN')+(a.bal<-0.5?' advance':'')+'</div></div>'+
+    '<div><div class="lbl">You owe as on '+dmy(on)+'</div><div class="big'+(a.bal>EPS?'':' ok')+'">\u20B9 '+
+    num(Math.abs(a.bal))+(a.bal<-EPS?' advance':'')+'</div></div>'+
     '<div style="text-align:right"><div class="lbl">Oldest unpaid bill</div><div class="big'+(a.days===null?' ok':'')+'">'+
     (a.days===null?'none':a.days+' days')+'</div></div></div>'+
     (a.oldest?'<p class="note" style="margin:9px 0 0">Dated '+dmy(a.oldest)+
@@ -769,7 +870,7 @@ function renderLedger(){
   });
   html+='<tr class="sum"><th colspan="3">Closing balance '+dmy(hi)+'</th>'+
     '<td class="addcol">'+fmt(yr.pur+yr.cr)+'</td><td class="cutcol">'+fmt(yr.pay+yr.dr)+
-    '</td><td class="'+(yr.bal>0.5?'due':yr.bal<-0.5?'adv':'')+'">'+fmt(yr.bal)+'</td><td></td><td></td></tr>';
+    '</td><td class="'+(yr.bal>EPS?'due':yr.bal<-EPS?'adv':'')+'">'+fmt(yr.bal)+'</td><td></td><td></td></tr>';
   $('#ledBody').innerHTML=html;
 }
 
@@ -824,21 +925,21 @@ function renderDaily(){
     });
     function z(x){return x?'':'zero'}
     return '<tr><th class="party">'+esc(r.p.name)+'</th>'+
-      '<td class="addcol '+z(v.purchase)+'">'+fmt(v.purchase)+'</td>'+
-      '<td class="addcol '+z(v.credit)+'">'+fmt(v.credit)+'</td>'+
-      '<td class="cutcol edge '+z(v.payment)+'">'+fmt(v.payment)+'</td>'+
-      '<td class="cutcol '+z(v.debit)+'">'+fmt(v.debit)+'</td>'+
-      '<td class="edge '+(r.bal>0.5?'due':r.bal<-0.5?'adv':'zero')+'">'+fmt(r.bal)+'</td></tr>';
+      '<td data-label="Purchase" class="addcol '+z(v.purchase)+'">'+fmt(v.purchase)+'</td>'+
+      '<td data-label="Credit note" class="addcol '+z(v.credit)+'">'+fmt(v.credit)+'</td>'+
+      '<td data-label="Payment" class="cutcol edge '+z(v.payment)+'">'+fmt(v.payment)+'</td>'+
+      '<td data-label="Debit note" class="cutcol '+z(v.debit)+'">'+fmt(v.debit)+'</td>'+
+      '<td data-label="Owed to date" class="edge '+(r.bal>EPS?'due':r.bal<-EPS?'adv':'zero')+'">'+fmt(r.bal)+'</td></tr>';
   }).join('');
-  html+='<tr class="sum"><th>Total</th><td class="addcol">'+fmt(t.purchase)+'</td><td class="addcol">'+
+  html+='<tr class="sum"><th>Total'+(ui.q?' (filtered)':'')+'</th><td class="addcol">'+fmt(t.purchase)+'</td><td class="addcol">'+
     fmt(t.credit)+'</td><td class="cutcol edge">'+fmt(t.payment)+'</td><td class="cutcol">'+
     fmt(t.debit)+'</td><td></td></tr>';
   $('#dayBody').innerHTML=html;
   var cl=t.payment+t.debit, bits=[];
-  if(t.payment) bits.push(Math.round(t.payment).toLocaleString('en-IN')+' paid');
-  if(t.debit) bits.push(Math.round(t.debit).toLocaleString('en-IN')+' in debit notes');
+  if(t.payment) bits.push(num(t.payment)+' paid');
+  if(t.debit) bits.push(num(t.debit)+' in debit notes');
   $('#dayNote').textContent = cl
-    ? Math.round(cl).toLocaleString('en-IN')+' cleared across all suppliers \u2014 '+bits.join(' and ')+'.'
+    ? num(cl)+' cleared across all suppliers \u2014 '+bits.join(' and ')+'.'
     : 'Nothing was cleared on this date.';
 }
 
@@ -848,16 +949,19 @@ function renderParties(){
   $('#partiesCap').textContent='Suppliers \u2014 FY '+f;
   if(!state.parties.length){
     $('#partiesBody').innerHTML='<tr><td colspan="6"><div class="empty">No suppliers yet. Add your first one above.</div></td></tr>';return}
-  $('#partiesBody').innerHTML=allRows(hi,f).map(function(r){
+  var list=allRows(hi,f).filter(function(r){return matches(r.p.name,ui.qp)});
+  if(!list.length){$('#partiesBody').innerHTML=
+    '<tr><td colspan="6"><div class="empty">No supplier matches \u201c'+esc(ui.qp)+'\u201d.</div></td></tr>';return}
+  $('#partiesBody').innerHTML=list.map(function(r){
     var n=state.entries.filter(function(e){
       return e.partyId===r.p.id&&e.date>=lo&&e.date<=hi}).length;
     return '<tr><th class="party">'+esc(r.p.name)+'</th>'+
-      '<td><input type="number" step="0.01" value="'+r.o+'" data-op="'+r.p.id+
+      '<td data-label="Opening"><input type="number" step="0.01" value="'+r.o+'" data-op="'+r.p.id+
       '" style="width:150px;text-align:right" aria-label="'+esc(r.p.name)+' opening"></td>'+
-      '<td class="'+(r.bal>0.5?'due':r.bal<-0.5?'adv':'zero')+'">'+fmt(r.bal)+'</td>'+
-      '<td class="soft2">'+n+'</td>'+
-      '<td class="soft2">'+(r.days===null?'\u2013':r.days+' d')+'</td>'+
-      '<td style="text-align:right"><button class="btn ghost small" data-del="'+r.p.id+'">Remove</button></td></tr>';
+      '<td data-label="Closing" class="'+(r.bal>EPS?'due':r.bal<-EPS?'adv':'zero')+'">'+fmt(r.bal)+'</td>'+
+      '<td data-label="Entries" class="soft2">'+n+'</td>'+
+      '<td data-label="Oldest unpaid" class="soft2">'+(r.days===null?'\u2013':r.days+' d')+'</td>'+
+      '<td data-label="" style="text-align:right"><button class="btn ghost small" data-del="'+r.p.id+'">Remove</button></td></tr>';
   }).join('');
 }
 
@@ -872,7 +976,7 @@ function renderData(){
     var bal=rows.reduce(function(a,r){return a+r.bal},0);
     return '<tr'+(f===ui.fy?' style="font-weight:600"':'')+'><th>'+f+(f===ui.fy?' \u2039 open':'')+'</th>'+
       '<td>'+fmt(pur)+'</td><td>'+fmt(pay)+'</td><td class="soft2">'+(n||'\u2013')+'</td>'+
-      '<td class="'+(bal>0.5?'due':bal<-0.5?'adv':'zero')+'">'+fmt(bal)+'</td></tr>';
+      '<td class="'+(bal>EPS?'due':bal<-EPS?'adv':'zero')+'">'+fmt(bal)+'</td></tr>';
   }).join('');
   var parts=Object.keys(TYPES).map(function(t){
     return state.entries.filter(function(e){return e.type===t}).length+' '+TYPES[t].label.toLowerCase()});
@@ -1104,7 +1208,35 @@ function goTab(t){
     $('#p-'+x).hidden=(x!==t)});
   renderAll();
 }
-function msg(sel,text,cls){var e=$(sel); e.textContent=text; e.className='msg'+(cls?' '+cls:'')}
+function msg(sel,text,cls){
+  var e=$(sel); if(e){e.textContent=text; e.className='msg'+(cls?' '+cls:'')}
+  if(text) toast(text,cls);
+}
+function toast(text,cls){
+  var host=$('#toasts'); if(!host) return;
+  var t=document.createElement('div');
+  t.className='toast'+(cls?' '+cls:''); t.textContent=text;
+  host.appendChild(t);
+  setTimeout(function(){
+    t.style.transition='opacity .25s'; t.style.opacity='0';
+    setTimeout(function(){ if(t.parentNode) t.parentNode.removeChild(t) },260);
+  }, cls==='err'?5200:3400);
+}
+function donut(vals,colors){
+  var tot=vals.reduce(function(a,b){return a+b},0);
+  if(tot<=0) return '';
+  var r=40, C=2*Math.PI*r, off=0, out='';
+  vals.forEach(function(v,i){
+    if(v<=0) return;
+    var len=C*v/tot;
+    out+='<circle cx="50" cy="50" r="'+r+'" fill="none" stroke="'+colors[i]+'" stroke-width="15" '+
+      'stroke-dasharray="'+len.toFixed(2)+' '+(C-len).toFixed(2)+'" stroke-dashoffset="'+(-off).toFixed(2)+
+      '" transform="rotate(-90 50 50)"/>';
+    off+=len;
+  });
+  return '<svg viewBox="0 0 100 100" width="104" height="104" role="img" '+
+    'aria-label="Outstanding split by age">'+out+'</svg>';
+}
 
 /* ---------- events ---------- */
 function bind(){
@@ -1127,7 +1259,9 @@ function bind(){
       x.setAttribute('aria-pressed',String(x===b))});
     renderRegister();
   });
-  $('#retry').addEventListener('click',function(){queueSave()});
+  $('#retry').addEventListener('click',function(){doSave()});
+  $('#balSearch').addEventListener('input',function(e){ui.q=e.target.value; renderBalance()});
+  $('#partySearch').addEventListener('input',function(e){ui.qp=e.target.value; renderParties()});
 
   $('#regGrid').addEventListener('click',function(e){
     var b=e.target.closest('button[data-open]'); if(!b)return;
@@ -1159,7 +1293,7 @@ function bind(){
     var x=null; state.entries.forEach(function(en){if(en.id===id)x=en});
     if(!x)return;
     if(!confirm('Delete this '+TYPES[x.type].label.toLowerCase()+' of '+
-      Math.round(x.amount).toLocaleString('en-IN')+' dated '+dmy(x.date)+'?')) return;
+      num(x.amount)+' dated '+dmy(x.date)+'?')) return;
     state.entries.splice(state.entries.indexOf(x),1);
     queueSave(); renderLedger();
   });
@@ -1178,7 +1312,7 @@ function bind(){
     state.entries.push({id:nextId++,date:d,partyId:p.id,type:t,amount:r.v,
       ref:$('#txRef').value.trim(),note:$('#txNote').value.trim(),by:role});
     $('#txAmt').value=''; $('#txRef').value=''; $('#txNote').value='';
-    msg('#txMsg',TYPES[t].label+' of '+Math.round(r.v).toLocaleString('en-IN')+
+    msg('#txMsg',TYPES[t].label+' of '+num(r.v)+
       ' added for '+p.name+' on '+dmy(d)+'.','ok');
     queueSave(); renderLedger();
   });

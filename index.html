@@ -195,6 +195,9 @@
 
   /* ---- tables become cards on a phone ---- */
   @media(max-width:640px){
+    .grid input,.grid .multi{padding:13px 9px;font-size:14px;min-height:44px}
+    .grid tbody th{padding:13px 12px}
+    .grid thead th{padding:10px 6px}
     .cards .wide,.wide{overflow:visible}
     .cards table{min-width:0;width:100%}
     .cards caption{padding:12px 2px 10px;border:0;background:transparent}
@@ -229,6 +232,13 @@
     caption{font-size:13pt}
   }
 
+  .saverow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:9px}
+  .saverow .status{margin:0}
+  .mast .status{color:#9FB8BB}
+  .mast .status.saving{color:var(--gold)}
+  .mast .status.saved{color:#7FD3B0}
+  .mast .status.failed{color:#F0A79F}
+
   /* sign in */
   .gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
     padding:24px;background:linear-gradient(158deg,var(--deep),var(--deep-2));font-family:var(--sans)}
@@ -256,8 +266,11 @@
 <svg class="logo" width="54" height="54" viewBox="0 0 64 64" aria-hidden="true"><rect width="64" height="64" rx="12" fill="#0F2E38"/><text x="32" y="44" font-family="Georgia,serif" font-size="36" fill="#DFA13C" text-anchor="middle">&#8377;</text></svg>
     <h2>Creditors Ledger</h2>
     <p class="lead">Enter your PIN to continue.</p>
-    <label for="pin">PIN</label>
-    <input type="password" id="pin" inputmode="numeric" autocomplete="off" maxlength="12">
+    <div id="pinWrap">
+      <label for="pin">PIN</label>
+      <input type="password" id="pin" inputmode="numeric" autocomplete="off" maxlength="12">
+    </div>
+
     <button class="btn" id="signIn">Sign in</button>
     <p class="m" id="gateMsg"></p>
     <p class="hint" id="gateHint" hidden></p>
@@ -273,11 +286,16 @@
       <h1>Creditors <span class="m">Ledger</span></h1>
       <p class="sub" id="sub">Suppliers you buy from &mdash; what you owe and how old it is</p>
       <div class="who" id="who" style="margin-top:7px"></div>
+      <div class="saverow">
+        <span class="status" id="stat"><span class="dot"></span><span id="statTxt">Ready</span></span>
+        <button class="btn small gold" id="saveNow">Save now</button>
+      </div>
       </div>
     </div>
     <div class="ctrls">
       <div class="fld"><label for="fy">Financial year</label><select id="fy"></select></div>
       <div class="fld"><label for="ason">Balance as on</label><input type="date" id="ason"></div>
+      <button class="btn ghost" id="asonToday">Today</button>
       <button class="btn ghost" id="asonEnd">Year end</button>
       <button class="btn gold" id="installBtn" hidden>Install app</button>
     </div>
@@ -329,8 +347,8 @@
       <option value="payment" selected>Payment</option><option value="debit">Debit note</option>
     </select></div>
     <div class="fld"><label for="txAmt">Amount</label><input type="number" id="txAmt" min="0" step="0.01" placeholder="0"></div>
-    <div class="fld"><label for="txRef">Bill / UTR no.</label><input type="text" id="txRef" placeholder="optional"></div>
-    <div class="fld"><label for="txNote">Remark</label><input type="text" id="txNote" placeholder="optional"></div>
+    <div class="fld"><label for="txRef">Bill / UTR no.</label><input type="text" id="txRef" maxlength="40" placeholder="optional"></div>
+    <div class="fld"><label for="txNote">Remark</label><input type="text" id="txNote" maxlength="120" placeholder="optional"></div>
     <button class="btn gold" id="txAdd">Add entry</button>
   </div>
   <p class="msg" id="txMsg"></p>
@@ -353,8 +371,6 @@
       <button data-type="purchase" aria-pressed="false">Purchase</button>
       <button data-type="credit" aria-pressed="false">Credit note</button>
     </div>
-    <span class="status" id="stat"><span class="dot"></span><span id="statTxt">Ready</span></span>
-    <button class="btn small ghost" id="retry" hidden>Retry save</button>
   </div>
   <div class="scroll"><table class="grid" id="regGrid"></table></div>
   <p class="note">
@@ -380,7 +396,7 @@
 <section class="pane" id="p-parties" role="tabpanel" hidden>
   <h2 class="sec">Add a supplier</h2>
   <div class="form">
-    <div class="fld"><label for="newName">Name</label><input type="text" id="newName" placeholder="e.g. RBRR"></div>
+    <div class="fld"><label for="newName">Name</label><input type="text" id="newName" maxlength="60" placeholder="e.g. RBRR"></div>
     <div class="fld"><label for="newOp">Opening balance <span id="opFy"></span></label>
       <input type="number" id="newOp" step="0.01" placeholder="0"></div>
     <button class="btn" id="addParty">Add supplier</button>
@@ -424,6 +440,37 @@
   </div>
   <p class="msg" id="bkMsg"></p>
 
+  <h2 class="sec">Cloud sync</h2>
+  <p class="note">
+    Off by default. Fill this in and the ledger syncs across every device that
+    signs in &mdash; your laptop, your phone, and your data-entry person's phone.
+    Each entry syncs on its own, so two people can work at the same time without
+    overwriting each other. The app keeps working offline and catches up later.
+  </p>
+  <p class="note"><b>Read the setup steps in README.txt first.</b> The database
+    rules matter more than anything else here: with Firebase's default test rules,
+    anyone who finds your database URL can read and change your creditor figures.</p>
+  <div class="form">
+    <div class="fld"><label for="cfgKey">apiKey</label><input type="text" id="cfgKey" style="width:230px" value="AIzaSyB5R94WC0wNpl4mal0ryxwd1QGkwWyHnP0"></div>
+    <div class="fld"><label for="cfgUrl">databaseURL &mdash; paste the console link or the URL itself</label>
+      <input type="text" id="cfgUrl" style="width:330px" placeholder="https://console.firebase.google.com/… or https://…firebasedatabase.app"></div>
+    <div class="fld"><label for="cfgRegion">Database region</label><select id="cfgRegion">
+      <option value="auto" selected>Work it out for me</option>
+      <option value="us-central1">us-central1 (firebaseio.com)</option>
+      <option value="asia-southeast1">asia-southeast1 (Singapore)</option>
+      <option value="europe-west1">europe-west1 (Belgium)</option>
+    </select></div>
+    <div class="fld"><label for="cfgProj">projectId</label><input type="text" id="cfgProj" style="width:170px" value="creditors-43f30"></div>
+    <div class="fld"><label for="cfgDom">authDomain</label><input type="text" id="cfgDom" style="width:230px" value="creditors-43f30.firebaseapp.com"></div>
+    <div class="fld"><label for="cfgLedger">Ledger name</label><input type="text" id="cfgLedger" style="width:140px" placeholder="main"></div>
+  </div>
+  <div class="form">
+    <button class="btn gold" id="cfgSave">Save and turn on</button>
+    <button class="btn ghost" id="cfgOff">Turn off</button>
+    <span class="status" id="cloudState"><span class="dot"></span><span id="cloudTxt">Not set up</span></span>
+  </div>
+  <p class="msg" id="cfgMsg"></p>
+
   <h2 class="sec">Users</h2>
   <p class="note">
     Two PINs. The <b>owner</b> PIN opens everything, including Excel download and this page.
@@ -465,7 +512,7 @@ var TYPES={purchase:{label:'Purchase',sign:1},credit:{label:'Credit note',sign:1
 var ADDS=['purchase','credit'], CUTS=['payment','debit'];
 var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-var state={parties:[],entries:[]};
+var state={parties:[],entries:[],tomb:{}};
 var ui={tab:'balance',fy:'',regType:'payment',regMonth:'',ason:'',day:'',ledParty:null,q:'',qp:''};
 var nextId=1, FY_LIST=[];
 var role=null;
@@ -540,8 +587,8 @@ function fmt(n){if(!n||Math.abs(n)<0.005)return '\u2013';
   var s=num(Math.abs(n));return n<0?'('+s+')':s}
 function num(n){return Number(n).toLocaleString('en-IN',{minimumFractionDigits:0,maximumFractionDigits:2})}
 function cell(n){return n?num(n):''}
-function esc(s){return String(s).replace(/[&<>"]/g,function(c){
-  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function esc(s){return String(s).replace(/[&<>"']/g,function(c){
+  return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function op(p,f){return (p.openings&&p.openings[f])||0}
 function partyById(id){for(var i=0;i<state.parties.length;i++) if(state.parties[i].id===id) return state.parties[i]; return null}
 
@@ -556,59 +603,394 @@ function parseAmount(raw){
   return {ok:true,v:Math.round(n*100)/100};
 }
 
-/* ---------- save ----------
-   Every change schedules a save; on top of that a heartbeat runs every 10
-   seconds and re-tries anything that did not get through. */
-var saveTimer=null, lastFail=false, dirty=false, saving=false;
-function setStat(cls,txt){var e=$('#stat');if(!e)return;
-  e.className='status '+cls; $('#statTxt').textContent=txt;
-  $('#retry').hidden = (cls!=='failed');}
-function queueSave(){
-  dirty=true; clearTimeout(saveTimer); setStat('saving','Saving\u2026');
-  saveTimer=setTimeout(doSave,300);
+/* ---------- save and sync ----------
+   Three things happen here:
+   - every change bumps `rev`; a save records which rev it wrote, so edits made
+     while a save is in flight are never marked as saved by mistake
+   - after writing we read the value back and compare, so "saved" means saved
+   - every 10 seconds we either push our changes or pull in changes another
+     window made, which keeps two tabs on the same device in step
+   This is all local to the device. It is not cross-device sync. */
+var saveTimer=null, lastFail=false, saving=false;
+var rev=0, savedRev=-1, lastSnap=null, failCount=0, givenUp=false;
+
+function isDirty(){return rev!==savedRev}
+
+/* Each record carries its own `updated` stamp so two devices editing different
+   rows can both win. Deletes leave a tombstone, otherwise a device that was
+   offline would push the row straight back. */
+function now(){return Date.now()}
+/* Ids are minted from the clock plus randomness, so two devices creating
+   records at the same moment cannot land on the same number. */
+function newId(){
+  return Number(String(Date.now()).slice(-9))*1000+Math.floor(Math.random()*1000);
 }
-function doSave(){
-  if(saving) return Promise.resolve();
+function touchE(e){state.pristine=false; e.updated=now(); mark('entries',e.id); return e}
+function touchP(pp){state.pristine=false; pp.updated=now(); mark('parties',pp.id); return pp}
+function killRec(kind,id){
+  state.pristine=false; state.tomb=state.tomb||{};
+  state.tomb[(kind==='entries'?'e':'p')+id]=now();
+  mark(kind,id,true);
+}
+var pending={entries:{},parties:{}};
+function mark(kind,id,gone){ pending[kind][id]=gone?'del':'put' }
+function stamp(){return new Date().toLocaleTimeString('en-IN',
+  {hour:'2-digit',minute:'2-digit',second:'2-digit'})}
+function setStat(cls,txt){
+  var e=$('#stat'); if(!e) return;
+  e.className='status '+cls; $('#statTxt').textContent=txt;
+}
+function queueSave(){
+  if(blocked&&!resumeSaving()) return;
+  rev++; clearTimeout(saveTimer); setStat('saving','Saving\u2026');
+  saveTimer=setTimeout(function(){doSave(); cloudPush()},300);
+}
+function saveLocal(){return doSave()}
+function doSave(manual){
+  if(givenUp&&!manual) return Promise.resolve(false);
+  if(saving){ if(manual) setStat('saving','Saving\u2026'); return Promise.resolve(false) }
+  if(!isDirty()&&!lastFail&&!manual){ return Promise.resolve(true) }
   saving=true;
-  var snap=JSON.stringify(state);
-  return store.set(KEY,snap).then(function(){
-    saving=false; dirty=false; lastFail=false;
-    setStat('saved','All changes saved \u00b7 '+new Date().toLocaleTimeString('en-IN',
-      {hour:'2-digit',minute:'2-digit',second:'2-digit'}));
-  }).catch(function(){
-    saving=false; lastFail=true;
-    setStat('failed','Not saved \u2014 retrying');
-  });
+  var atRev=rev, snap=JSON.stringify(state);
+  setStat('saving','Saving\u2026');
+  return store.set(KEY,snap)
+    .then(function(){ return store.get(KEY) })      // read it back before believing it
+    .then(function(back){
+      saving=false;
+      if(back!==snap){ throw new Error('readback mismatch') }
+      lastSnap=snap; lastFail=false; failCount=0; givenUp=false;
+      if(atRev>savedRev) savedRev=atRev;
+      if(isDirty()){ setStat('saving','Saving\u2026'); setTimeout(function(){doSave()},120); return false }
+      setStat('saved','Saved \u00b7 '+stamp());
+      if(manual) toast('Saved at '+stamp()+'.','ok');
+      return true;
+    })
+    .catch(function(err){
+      saving=false; lastFail=true; failCount++;
+      var quota = err && /quota|exceeded|QUOTA/i.test(String(err.name||'')+String(err.message||''));
+      if(quota||failCount>=6){
+        // Retrying a full disk forever just burns battery. Stop and say so.
+        lastFail=false; givenUp=true;
+        setStat('failed','Not saved \u2014 storage is full');
+        toast(quota?'Storage on this device is full. Download a backup, then remove some data.'
+                   :'Saving keeps failing. Download a backup from the Data tab.','err');
+      }else{
+        setStat('failed','Not saved \u2014 retrying ('+failCount+')');
+        if(manual) toast('Could not save. It will keep retrying every 10 seconds.','err');
+      }
+      return false;
+    });
+}
+
+/* pull in whatever another window of this app wrote */
+function adopt(raw,how){
+  var d; try{ d=normalise(JSON.parse(raw)) }catch(e){ return }
+  if(!d) return;
+  state=d;
+  reindex();
+  lastSnap=raw; rev=0; savedRev=0;
+  if(!partyById(ui.ledParty)) ui.ledParty=state.parties.length?state.parties[0].id:null;
+  renderAll();
+  setStat('saved','Updated from '+how+' \u00b7 '+stamp());
+  toast('Picked up changes made in another window.','ok');
+}
+function syncTick(){
+  cloudPush();
+  if(isDirty()||lastFail){ doSave(); return }
+  if(saving) return;
+  store.get(KEY).then(function(raw){
+    if(raw&&lastSnap&&raw!==lastSnap) adopt(raw,'another window');
+  }).catch(function(){});
 }
 function startHeartbeat(){
-  setInterval(function(){ if(dirty||lastFail) doSave() },10000);
+  setInterval(syncTick,10000);
+  window.addEventListener('storage',function(e){
+    if(e.key===KEY&&e.newValue&&e.newValue!==lastSnap&&!isDirty()) adopt(e.newValue,'another tab');
+  });
   document.addEventListener('visibilitychange',function(){
-    if(document.visibilityState==='hidden'&&(dirty||lastFail)) doSave()});
-  window.addEventListener('pagehide',function(){ if(dirty||lastFail) doSave() });
+    if(document.visibilityState==='hidden') doSave(); else syncTick();
+  });
+  window.addEventListener('pagehide',function(){ doSave() });
+  window.addEventListener('beforeunload',function(e){
+    if(isDirty()){ e.preventDefault(); e.returnValue='' }
+  });
+  document.addEventListener('keydown',function(e){
+    if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); doSave(true) }
+  });
+  ['click','keydown','input','touchstart'].forEach(function(ev){
+    document.addEventListener(ev,resetIdle,{passive:true})});
+}
+
+
+/* ================= Firebase sync =================
+   The local copy stays the source of truth for what is on screen, so the app
+   still works with no network. Firebase is a channel on top of it: each entry
+   and each party is its own node, merged by whichever copy was edited last.
+   Nothing here runs until the owner fills in the config on the Data tab. */
+var corrupt=null, blocked=false;
+var cloud={cfg:null,mod:null,db:null,auth:null,user:null,state:'off',unsub:[],pushing:false};
+
+function cfgGet(){
+  try{ return JSON.parse(localStorage.getItem('creditors:cloud')||'null') }catch(e){ return null }
+}
+function cfgPut(c){
+  try{ c?localStorage.setItem('creditors:cloud',JSON.stringify(c))
+        :localStorage.removeItem('creditors:cloud'); return true }
+  catch(e){ return false }
+}
+function cloudSet(st,txt){
+  cloud.state=st;
+  var e=$('#cloudState'); if(!e) return;
+  e.className='status '+(st==='live'?'saved':st==='error'?'failed':st==='connecting'?'saving':'');
+  $('#cloudTxt').textContent=txt;
+}
+function base(){return 'ledgers/'+(cloud.cfg.ledger||'main')}
+
+/* Accepts the real database URL, a pasted Firebase console link, or just the
+   instance name. Realtime Database only ever lives in one of three regions. */
+var REGIONS=['us-central1','asia-southeast1','europe-west1'];
+function urlFor(inst,region){
+  return region==='us-central1'
+    ? 'https://'+inst+'.firebaseio.com'
+    : 'https://'+inst+'.'+region+'.firebasedatabase.app';
+}
+/* Pull the instance name out of whatever the owner pasted. */
+function instFrom(v){
+  v=String(v||'').trim().replace(/\/+$/,'');
+  if(!v) return null;
+  var m=v.match(/^https:\/\/([a-z0-9-]+)\.firebaseio\.com$/i); if(m) return m[1];
+  m=v.match(/^https:\/\/([a-z0-9-]+)\.[a-z0-9-]+\.firebasedatabase\.app$/i); if(m) return m[1];
+  m=v.match(/\/database\/([a-z0-9-]+)\//i); if(m) return m[1];      // console link
+  if(/^[a-z0-9-]+$/i.test(v)) return v;                               // bare instance name
+  return null;
+}
+/* Ask each region whether this database exists there. A locked database still
+   answers, it just refuses (401/403). A wrong region gives 404 or nothing. */
+function detectUrl(inst){
+  if(typeof fetch==='undefined') return Promise.resolve(null);
+  return Promise.all(REGIONS.map(function(rg){
+    var u=urlFor(inst,rg);
+    return fetch(u+'/.json?shallow=true')
+      .then(function(r){ return {url:u,status:r.status} })
+      .catch(function(){ return {url:u,status:0} });
+  })).then(function(res){
+    var hit=res.filter(function(r){return r.status===200||r.status===401||r.status===403});
+    return hit.length?hit[0].url:null;
+  });
+}
+function normUrl(v,region){
+  v=String(v||'').trim().replace(/\/+$/,'');
+  if(!v) return null;
+  if(/^https:\/\/[a-z0-9-]+\.firebaseio\.com$/i.test(v)) return v;
+  if(/^https:\/\/[a-z0-9-]+\.[a-z0-9-]+\.firebasedatabase\.app$/i.test(v)) return v;
+  var inst=null;
+  var m=v.match(/\/database\/([a-z0-9-]+)\//i);          // console link
+  if(m) inst=m[1];
+  else if(/^[a-z0-9-]+$/i.test(v)) inst=v;                 // bare instance name
+  if(!inst) return null;
+  return region==='us-central1'
+    ? 'https://'+inst+'.firebaseio.com'
+    : 'https://'+inst+'.'+region+'.firebasedatabase.app';
+}
+
+function cloudLoad(){
+  if(cloud.mod) return Promise.resolve(cloud.mod);
+  var v='https://www.gstatic.com/firebasejs/10.12.2/';
+  return Promise.all([
+    import(v+'firebase-app.js'), import(v+'firebase-auth.js'), import(v+'firebase-database.js')
+  ]).then(function(m){ cloud.mod={app:m[0],auth:m[1],db:m[2]}; return cloud.mod });
+}
+
+function cloudConnect(){
+  var c=cfgGet();
+  if(!c||!c.apiKey){ cloudSet('off','Not set up'); return Promise.resolve(false) }
+  if(!c.databaseURL){
+    if(!c.instance){ cloudSet('error','No database set up yet'); return Promise.resolve(false) }
+    cloudSet('connecting','Finding your database\u2026');
+    return detectUrl(c.instance).then(function(found){
+      if(!found){ cloudSet('error','Could not reach that database'); return false }
+      c.databaseURL=found; cfgPut(c); return cloudConnect();
+    });
+  }
+  cloud.cfg=c; cloudSet('connecting','Connecting\u2026');
+  return cloudLoad().then(function(m){
+    var app=m.app.initializeApp({apiKey:c.apiKey,authDomain:c.authDomain,
+      databaseURL:c.databaseURL,projectId:c.projectId},'ledger-'+Date.now());
+    cloud.auth=m.auth.getAuth(app); cloud.db=m.db.getDatabase(app);
+    return m.auth.signInAnonymously(cloud.auth);
+  }).then(function(cred){
+    cloud.user=cred.user;
+    cloudSet('live','Connected \u00b7 '+stamp());
+    var m2=cloud.mod.db;
+    return m2.get(m2.ref(cloud.db, base()));
+  }).then(function(snap){
+    var val=snap.val()||{};
+    var cloudHas=val.parties&&Object.keys(val.parties).length;
+    if(cloudHas&&state.pristine){
+      // this device has never been used; take the ledger as it stands
+      adoptWhole(val);
+      toast('Loaded the ledger from the cloud.','ok');
+    }else if(cloudHas){
+      Object.keys(val.parties||{}).forEach(function(id){adoptRec('parties',id,val.parties[id])});
+      Object.keys(val.entries||{}).forEach(function(id){adoptRec('entries',id,val.entries[id])});
+      cloudPushAll();
+    }else{
+      cloudPushAll();               // empty ledger: this device seeds it
+    }
+    saveLocal(); renderAll(); cloudListen(); return true;
+  })
+  .catch(function(err){
+    cloudSet('error',cloudWhy(err));
+    return false;
+  });
+}
+function cloudWhy(err){
+  var c=(err&&err.code)||'';
+  if(c.indexOf('admin-restricted')>=0||c.indexOf('operation-not-allowed')>=0)
+    return 'Anonymous sign-in is not enabled in Firebase \u2014 see step 4';
+  if(c.indexOf('network')>=0) return 'Offline \u2014 working from this device';
+  if(c.indexOf('permission')>=0||c.indexOf('PERMISSION')>=0) return 'Database rules refused access \u2014 check step 3';
+
+  if(c.indexOf('api-key')>=0) return 'That apiKey is not valid for this project';
+  return (err&&err.message)?String(err.message).slice(0,90):'Could not connect';
+}
+
+function cloudListen(){
+  var m=cloud.mod.db, r=m.ref;
+  cloud.unsub.forEach(function(f){try{f()}catch(e){}}); cloud.unsub=[];
+  ['parties','entries'].forEach(function(kind){
+    var node=r(cloud.db, base()+'/'+kind);
+    cloud.unsub.push(m.onValue(node,function(snap){
+      var val=snap.val()||{}, touched=false;
+      Object.keys(val).forEach(function(id){ if(adoptRec(kind,id,val[id])) touched=true });
+      if(touched){ renderAll(); toast('Updated from the cloud.','ok'); saveLocal() }
+    },function(){ cloudSet('error','Lost connection \u2014 working from this device') }));
+  });
+  cloud.unsub.push(m.onValue(r(cloud.db, base()+'/pins'),function(snap){
+    var v=snap.val();
+    if(v&&v.admin&&(!state.pins||v.admin!==state.pins.admin||v.entry!==state.pins.entry)){
+      state.pins=v; saveLocal();
+    }
+  }));
+  var tnode=r(cloud.db, base()+'/tomb');
+  cloud.unsub.push(m.onValue(tnode,function(snap){
+    var val=snap.val()||{}, touched=false;
+    state.tomb=state.tomb||{};
+    Object.keys(val).forEach(function(k){
+      if((state.tomb[k]||0)>=val[k]) return;
+      state.tomb[k]=val[k];
+      var id=Number(k.slice(1));
+      if(k[0]==='e'){
+        var i=state.entries.findIndex(function(x){return x.id===id});
+        if(i>=0&&(state.entries[i].updated||0)<val[k]){ state.entries.splice(i,1); touched=true }
+      }else{
+        var j=state.parties.findIndex(function(x){return x.id===id});
+        if(j>=0&&(state.parties[j].updated||0)<val[k]){ state.parties.splice(j,1); touched=true }
+      }
+    });
+    if(touched){ renderAll(); saveLocal() }
+  }));
+}
+
+function adoptWhole(val){
+  state.parties=[]; state.entries=[]; state.tomb=val.tomb||{};
+  Object.keys(val.parties||{}).forEach(function(id){adoptRec('parties',id,val.parties[id])});
+  Object.keys(val.entries||{}).forEach(function(id){adoptRec('entries',id,val.entries[id])});
+  if(val.pins) state.pins=val.pins;
+  state.pristine=false;
+  pending={entries:{},parties:{}};
+  if(!partyById(ui.ledParty)) ui.ledParty=state.parties.length?state.parties[0].id:null;
+}
+
+/* returns true if the local copy actually changed */
+function adoptRec(kind,id,rec){
+  if(!rec||typeof rec!=='object') return false;
+  id=Number(id); if(!id) return false;
+  state.tomb=state.tomb||{};
+  var tk=(kind==='entries'?'e':'p')+id;
+  if((state.tomb[tk]||0)>=(rec.updated||0)) return false;      // deleted here, and more recently
+  var arr = kind==='entries'?state.entries:state.parties;
+  var i=-1; for(var k=0;k<arr.length;k++) if(arr[k].id===id){i=k;break}
+  if(i>=0 && (arr[i].updated||0)>=(rec.updated||0)) return false;
+  rec.id=id;
+  if(kind==='entries'){
+    if(!rec.date||!TYPES[rec.type]||typeof rec.amount!=='number'||!isFinite(rec.amount)||rec.amount<0) return false;
+  }else{
+    if(!rec.name) return false;
+    rec.openings=rec.openings||{};
+  }
+  if(i>=0) arr[i]=rec; else arr.push(rec);
+  if(id>=nextId) nextId=id+1;
+  return true;
+}
+
+function cloudPush(){
+  if(cloud.state!=='live'||cloud.pushing) return Promise.resolve();
+  var todo={}, any=false;
+  ['entries','parties'].forEach(function(kind){
+    Object.keys(pending[kind]).forEach(function(id){
+      any=true;
+      if(pending[kind][id]==='del'){ todo[base()+'/'+kind+'/'+id]=null }
+      else{
+        var arr=kind==='entries'?state.entries:state.parties, rec=null;
+        for(var k=0;k<arr.length;k++) if(arr[k].id===Number(id)) rec=arr[k];
+        if(rec) todo[base()+'/'+kind+'/'+id]=rec;
+      }
+    });
+  });
+  Object.keys(state.tomb||{}).forEach(function(k){ todo[base()+'/tomb/'+k]=state.tomb[k]; any=true });
+  if(state.pins){ todo[base()+'/pins']=state.pins; any=true }
+  if(!any) return Promise.resolve();
+  cloud.pushing=true;
+  var m=cloud.mod.db;
+  return m.update(m.ref(cloud.db),todo).then(function(){
+    cloud.pushing=false; pending={entries:{},parties:{}};
+    cloudSet('live','Synced \u00b7 '+stamp());
+  }).catch(function(err){
+    cloud.pushing=false; cloudSet('error',cloudWhy(err));
+  });
+}
+function cloudPushAll(){
+  if(cloud.state!=='live') return Promise.resolve();
+  state.entries.forEach(function(e){ if(!e.updated) e.updated=now(); mark('entries',e.id) });
+  state.parties.forEach(function(p){ if(!p.updated) p.updated=now(); mark('parties',p.id) });
+  return cloudPush();
+}
+function cloudOff(){
+  cloud.unsub.forEach(function(f){try{f()}catch(e){}}); cloud.unsub=[];
+  if(cloud.auth&&cloud.mod) try{ cloud.mod.auth.signOut(cloud.auth) }catch(e){}
+  cloud.db=null; cloud.user=null; cloudSet('off','Not connected');
 }
 
 /* ---------- seed / load ---------- */
 function seedState(){
   var base=[['RBRR',1118143],['RBD',445484.48],['VCPL',375850],['R N FOODs',0],['RBI',1534134]];
-  state={parties:[],entries:[]}; nextId=1;
+  state={parties:[],entries:[],tomb:{},pristine:true}; nextId=1;
   var by={};
-  base.forEach(function(b){var p={id:nextId++,name:b[0],openings:{'2026-27':b[1]}};
+  base.forEach(function(b){var p={id:newId(),name:b[0],openings:{'2026-27':b[1]}};
     state.parties.push(p); by[b[0]]=p.id});
   if(SEED) Object.keys(TYPES).forEach(function(t){
     (SEED[t]||[]).forEach(function(r){
-      if(by[r[1]]===undefined){var p={id:nextId++,name:r[1],openings:{}};state.parties.push(p);by[r[1]]=p.id}
-      state.entries.push({id:nextId++,date:r[0],partyId:by[r[1]],type:t,amount:r[2],ref:'',note:''});
+      if(by[r[1]]===undefined){var p={id:newId(),name:r[1],openings:{}};state.parties.push(p);by[r[1]]=p.id}
+      state.entries.push({id:newId(),date:r[0],partyId:by[r[1]],type:t,amount:r[2],ref:'',note:''});
     })});
 }
+function maxId(list){var m=0;for(var i=0;i<list.length;i++){var v=list[i].id||0; if(v>m) m=v} return m}
+function reindex(){ nextId=1+Math.max(maxId(state.parties),maxId(state.entries)) }
 function normalise(d){
   if(!d||!d.parties||!d.parties.length) return null;
-  d.entries=d.entries||[];
+  d.entries=d.entries||[]; d.tomb=d.tomb||{};
+  if(d.pristine===undefined) d.pristine=false;
   d.parties.forEach(function(p){
     if(!p.openings){p.openings={}; if(p.opening) p.openings['2026-27']=p.opening; delete p.opening}
   });
+  var live={}; d.parties.forEach(function(pp){live[pp.id]=1});
+  var before=d.entries.length;
   d.entries=d.entries.filter(function(e){
-    return e && e.date && TYPES[e.type] && typeof e.amount==='number' && isFinite(e.amount) && e.amount>=0;
+    return e && e.date && TYPES[e.type] && typeof e.amount==='number' &&
+           isFinite(e.amount) && e.amount>=0 && live[e.partyId];
   });
+  d.dropped=before-d.entries.length;   // entries pointing at a supplier that no longer exists
   return d;
 }
 function buildFyList(){
@@ -616,7 +998,8 @@ function buildFyList(){
   state.parties.forEach(function(p){Object.keys(p.openings||{}).forEach(function(f){s[f]=1})});
   s[fyOf(today)]=1;
   var years=Object.keys(s).map(function(f){return Number(f.slice(0,4))});
-  var lo=Math.min.apply(null,years), hi=Math.max.apply(null,years);
+  var lo=years[0], hi=years[0];
+  years.forEach(function(y){ if(y<lo)lo=y; if(y>hi)hi=y });
   hi=Math.max(hi, Number(fyOf(today).slice(0,4))+4);   // always 5 years ahead
   FY_LIST=[];
   for(var y=lo;y<=hi;y++) FY_LIST.push(y+'-'+String((y+1)%100).padStart(2,'0'));
@@ -630,17 +1013,17 @@ function boot(){
       if(found) return found;
       return store.get(k).then(function(v){
         if(!v) return null;
-        try{ return normalise(JSON.parse(v)) }catch(e){ return null }   // corrupt -> ignore, keep going
+        try{ return normalise(JSON.parse(v)) }
+        catch(e){ if(k===KEY) corrupt={key:k,raw:v}; return null }   // hold on to the raw text
       }).catch(function(){ return null });
     });
   });
   chain.then(function(loaded){
     if(loaded){
       state=loaded;
-      var ids=[0];
-      state.parties.forEach(function(p){ids.push(p.id)});
-      state.entries.forEach(function(e){ids.push(e.id)});
-      nextId=1+Math.max.apply(null,ids);
+      reindex();
+    }else if(corrupt){
+      seedState(); state.pristine=true; blocked=true;   // show samples, overwrite nothing
     }else{ seedState() }
     buildFyList();
     var dates=state.entries.map(function(e){return e.date}).sort();
@@ -650,8 +1033,36 @@ function boot(){
     $('#fy').innerHTML=FY_LIST.map(function(f){return '<option>'+f+'</option>'}).join('');
     $('#fy').value=ui.fy;
     setYear(ui.fy,last);
-    bind(); installManifest(); bindGate(); startHeartbeat(); doSave();
+    bind(); installManifest(); bindGate(); startHeartbeat();
+    if(blocked){ warnCorrupt() } else { rev=1; doSave() }
   });
+}
+
+function warnCorrupt(){
+  // Saved data could not be read. Show sample figures but change nothing on disk
+  // until the owner decides, and hand them the raw text to try to recover.
+  var g=$('#gate .box');
+  var box=document.createElement('div');
+  box.className='hint'; box.style.borderTop='2px solid var(--due)'; box.style.color='var(--due)';
+  box.innerHTML='<b>Your saved data could not be read.</b><br>'+
+    'What you see after signing in is sample data, not your records. '+
+    'Nothing has been overwritten yet \u2014 saving is paused. '+
+    '<button class="btn small ghost" id="dlRaw" style="margin-top:9px">Download the unreadable file</button>';
+  g.appendChild(box);
+  setTimeout(function(){
+    var b=$('#dlRaw'); if(!b) return;
+    b.addEventListener('click',function(){
+      download(corrupt.raw,'text/plain','creditors-unreadable-'+today+'.txt');
+      toast('Saved. Send it over and it may be recoverable.','ok');
+    });
+  },0);
+}
+function resumeSaving(){
+  if(!blocked) return;
+  if(!confirm('This will overwrite the unreadable saved data with what is on screen now.\n\n'+
+    'Download the unreadable file first if you have not. Continue?')) return false;
+  blocked=false; queueSave(); toast('Saving switched back on.','ok');
+  return true;
 }
 
 /* ---------- sign in ---------- */
@@ -665,16 +1076,32 @@ function bindGate(){
   $('#pin').addEventListener('keydown',function(e){if(e.key==='Enter') trySignIn()});
   $('#pin').focus();
 }
-function trySignIn(){
-  var v=$('#pin').value.trim(), h=pinHash(v), p=pins();
-  var r = h===p.admin?'admin' : (h===p.entry?'entry':null);
-  if(!r){ $('#gateMsg').textContent='That PIN did not match.'; $('#pin').value=''; $('#pin').focus(); return }
-  role=r; $('#pin').value=''; $('#gateMsg').textContent='';
+function enter(r){
+  role=r; $('#gateMsg').textContent='';
+  $('#pin').value='';
   $('#gate').hidden=true; $('#gate').style.display='none';
   $('.app').classList.add('on');
-  applyRole();
+  applyRole(); resetIdle();
+  if(cfgGet()&&cfgGet().apiKey) cloudConnect();   // sync starts quietly behind the PIN
+}
+function trySignIn(){
+  var v=$('#pin').value.trim(), h=pinHash(v), pp=pins();
+  var rr = h===pp.admin?'admin' : (h===pp.entry?'entry':null);
+  if(!rr){ $('#gateMsg').textContent='That PIN did not match.'; $('#pin').value=''; $('#pin').focus(); return }
+  enter(rr);
+}
+var idleTimer=null;
+function resetIdle(){
+  clearTimeout(idleTimer);
+  if(!role) return;
+  idleTimer=setTimeout(function(){
+    if(!role) return;
+    doSave(); signOut();
+    toast('Signed out after 15 minutes with nothing happening.','ok');
+  },15*60*1000);
 }
 function signOut(){
+  clearTimeout(idleTimer);
   role=null;
   $('.app').classList.remove('on');
   $('#gate').hidden=false; $('#gate').style.display='flex';
@@ -687,12 +1114,11 @@ function applyRole(){
     $('#t-'+t).hidden=!vis;
     if(!vis) $('#p-'+t).hidden=true;
   });
-  Array.prototype.forEach.call($('#regSeg').querySelectorAll('button'),function(b){
-    b.hidden = R.types.indexOf(b.dataset.type)<0;
-  });
   if(R.types.indexOf(ui.regType)<0) ui.regType=R.types[0];
   Array.prototype.forEach.call($('#regSeg').querySelectorAll('button'),function(b){
-    b.setAttribute('aria-pressed',String(b.dataset.type===ui.regType))});
+    b.hidden = R.types.indexOf(b.dataset.type)<0;
+    b.setAttribute('aria-pressed',String(b.dataset.type===ui.regType));
+  });
 
   $('#who').innerHTML='<span class="chip">'+R.label+'</span>'+
     '<button class="btn ghost small" id="signOut">Sign out</button>';
@@ -705,10 +1131,15 @@ function applyRole(){
 }
 
 function setYear(f,prefer){
+  var keepMonth = ui.regMonth ? Number(ui.regMonth.slice(5,7)) : 0;
   ui.fy=f;
   var lo=fyStart(f), hi=fyEnd(f);
   var pick=clamp(prefer&&prefer>=lo&&prefer<=hi?prefer:today,lo,hi);
   ui.ason=pick; ui.day=pick; ui.regMonth=pick.slice(0,7);
+  if(keepMonth){                       // stay on the month you were working in
+    var want=fyMonths(f).filter(function(m){return Number(m.slice(5,7))===keepMonth});
+    if(want.length) ui.regMonth=want[0];
+  }
   ['#ason','#dayDate','#txDate'].forEach(function(s){var e=$(s); e.min=lo; e.max=hi});
   $('#ason').value=ui.ason; $('#dayDate').value=ui.day; $('#txDate').value=ui.day;
   $('#regMonth').innerHTML=fyMonths(f).map(function(m){
@@ -819,6 +1250,22 @@ function renderBalance(){
     (outst?'<div class="keys">'+keys+'</div>'
           :'<p class="note" style="margin:12px 0 0">Nothing outstanding on this date.</p>');
 
+  var yi=FY_LIST.indexOf(f);
+  if(yi>0){
+    var prev=FY_LIST[yi-1];
+    var stale=state.parties.filter(function(pp){
+      if(!(pp.openings&&pp.openings[f]!==undefined)) return false;
+      return Math.abs(ageing(pp,prev,fyEnd(prev)).bal-op(pp,f))>EPS;
+    });
+    if(stale.length){
+      $('#lagFlag').innerHTML='<p class="flag bad">The opening balance for <b>'+
+        stale.map(function(x){return esc(x.name)}).join(', ')+
+        '</b> no longer matches the closing balance of '+prev+
+        ' \u2014 something in that year was changed after the balances were carried forward. '+
+        'Open Parties and carry them forward again.</p>';
+      return;
+    }
+  }
   var lp=lastDate(ADDS,f), lpay=lastDate(CUTS,f);
   $('#lagFlag').innerHTML=(lp&&lpay&&lp<lpay&&lp<d)
     ? '<p class="flag">Purchases are entered only up to <b>'+dmy(lp)+'</b> while payments run to <b>'+
@@ -872,6 +1319,15 @@ function renderLedger(){
     '<td class="addcol">'+fmt(yr.pur+yr.cr)+'</td><td class="cutcol">'+fmt(yr.pay+yr.dr)+
     '</td><td class="'+(yr.bal>EPS?'due':yr.bal<-EPS?'adv':'')+'">'+fmt(yr.bal)+'</td><td></td><td></td></tr>';
   $('#ledBody').innerHTML=html;
+  if(ui.focusDate){
+    var want=dmy(ui.focusDate);
+    Array.prototype.forEach.call($('#ledBody').querySelectorAll('tr'),function(tr){
+      if(tr.children[0]&&tr.children[0].textContent===want){
+        tr.style.background='#FCF3E1'; tr.style.boxShadow='inset 3px 0 0 var(--gold)';
+        if(tr.scrollIntoView) tr.scrollIntoView({block:'center'});
+      }});
+    ui.focusDate=null;
+  }
 }
 
 /* ---------- register ---------- */
@@ -896,7 +1352,7 @@ function renderRegister(){
       rt+=v; col[i]+=v;
       tds+='<td class="'+(ds===today?'today':'')+'">'+
         (es.length>1
-          ? '<button class="multi" data-open="'+p.id+'">'+cell(v)+' \u00d7'+es.length+'</button>'
+          ? '<button class="multi" data-open="'+p.id+'" data-date="'+ds+'">'+cell(v)+' \u00d7'+es.length+'</button>'
           : '<input inputmode="decimal" data-date="'+ds+'" data-party="'+p.id+'" class="'+(v?'filled':'')+
             '" value="'+cell(v)+'" aria-label="'+esc(p.name)+' '+ds+'">')+'</td>';
     });
@@ -993,22 +1449,49 @@ var CRC=(function(){var t=[];for(var n=0;n<256;n++){var c=n;
   return function(b){var c=0xFFFFFFFF;
     for(var i=0;i<b.length;i++) c=t[(c^b[i])&0xFF]^(c>>>8);
     return (c^0xFFFFFFFF)>>>0}})();
+function deflate(bytes){
+  if(typeof CompressionStream==='undefined') return Promise.resolve(null);
+  try{
+    var cs=new CompressionStream('deflate-raw');
+    var wr=cs.writable.getWriter(); wr.write(bytes); wr.close();
+    var rd=cs.readable.getReader(), chunks=[], total=0;
+    return (function pump(){
+      return rd.read().then(function(r){
+        if(r.done){
+          var out=new Uint8Array(total), at=0;
+          chunks.forEach(function(c){out.set(c,at); at+=c.length});
+          return out;
+        }
+        chunks.push(r.value); total+=r.value.length; return pump();
+      });
+    })().catch(function(){return null});
+  }catch(e){ return Promise.resolve(null) }
+}
 function zip(files){
+  var enc=new TextEncoder();
+  return Promise.all(files.map(function(f){
+    var raw=enc.encode(f.body);
+    return deflate(raw).then(function(z){
+      return {name:f.name, raw:raw, data:(z&&z.length<raw.length)?z:raw, method:(z&&z.length<raw.length)?8:0};
+    });
+  })).then(zipParts);
+}
+function zipParts(files){
   var enc=new TextEncoder(), parts=[], cd=[], off=0;
   function u16(n){return [n&255,(n>>8)&255]}
   function u32(n){return [n&255,(n>>8)&255,(n>>16)&255,(n>>24)&255]}
   files.forEach(function(f){
-    var data=enc.encode(f.body), crc=CRC(data), nm=enc.encode(f.name);
-    var lh=[].concat([80,75,3,4],u16(20),u16(0),u16(0),u16(0),u16(0),
-      u32(crc),u32(data.length),u32(data.length),u16(nm.length),u16(0));
+    var data=f.data, crc=CRC(f.raw), nm=enc.encode(f.name);
+    var lh=[].concat([80,75,3,4],u16(20),u16(0),u16(f.method),u16(0),u16(0),
+      u32(crc),u32(data.length),u32(f.raw.length),u16(nm.length),u16(0));
     parts.push(new Uint8Array(lh),nm,data);
-    cd.push({crc:crc,len:data.length,nm:nm,off:off});
+    cd.push({crc:crc,len:data.length,raw:f.raw.length,nm:nm,off:off,method:f.method});
     off+=lh.length+nm.length+data.length;
   });
   var cdb=[];
   cd.forEach(function(e){
-    cdb=cdb.concat([80,75,1,2],u16(20),u16(20),u16(0),u16(0),u16(0),u16(0),
-      u32(e.crc),u32(e.len),u32(e.len),u16(e.nm.length),
+    cdb=cdb.concat([80,75,1,2],u16(20),u16(20),u16(0),u16(e.method),u16(0),u16(0),
+      u32(e.crc),u32(e.len),u32(e.raw),u16(e.nm.length),
       u16(0),u16(0),u16(0),u16(0),u32(0),u32(e.off));
     cdb=cdb.concat(Array.from(e.nm));
   });
@@ -1072,7 +1555,7 @@ function buildXlsx(sheets){
     {name:'xl/workbook.xml',body:wb},{name:'xl/_rels/workbook.xml.rels',body:wbr},
     {name:'xl/styles.xml',body:st}];
   sheets.forEach(function(s,i){files.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',body:sheetXml(s.rows)})});
-  return zip(files);
+  return zip(files);   // promise
 }
 
 function exportXlsx(){
@@ -1113,29 +1596,32 @@ function exportXlsx(){
           e.date>on?'after '+dmy(on):(a.status[e.id]||'')])});
   });
 
-  var blob=buildXlsx([{name:'Balance',rows:bal},{name:'Ageing',rows:age},
-    {name:'Ledgers',rows:led},{name:'Transactions',rows:tx},{name:'Opening balances',rows:opn}]);
-  var u=URL.createObjectURL(blob), a=document.createElement('a');
-  a.href=u; a.download='creditors-'+f+'-as-on-'+on+'.xlsx'; a.click();
-  setTimeout(function(){URL.revokeObjectURL(u)},1500);
-  msg('#bkMsg','Excel file downloaded \u2014 five sheets, figures as on '+dmy(on)+'.','ok');
+  buildXlsx([{name:'Balance',rows:bal},{name:'Ageing',rows:age},
+    {name:'Ledgers',rows:led},{name:'Transactions',rows:tx},{name:'Opening balances',rows:opn}])
+  .then(function(blob){
+    var u=URL.createObjectURL(blob), a=document.createElement('a');
+    a.href=u; a.download='creditors-'+f+'-as-on-'+on+'.xlsx'; a.click();
+    setTimeout(function(){URL.revokeObjectURL(u)},1500);
+    msg('#bkMsg','Excel downloaded \u2014 five sheets, figures as on '+dmy(on)+'.','ok');
+  }).catch(function(){ msg('#bkMsg','Could not build the Excel file.','err') });
 }
 
+function csvq(v){return '"'+String(v==null?'':v).replace(/"/g,'""')+'"'}
 function exportCsv(all){
   var lo=fyStart(ui.fy),hi=fyEnd(ui.fy);
   var L=['Section,Financial year,Date,Party,Type,Bill/ref,Remark,Amount'];
   var yrs = all?FY_LIST:[ui.fy];
   yrs.forEach(function(f){
     state.parties.forEach(function(p){
-      if(op(p,f)) L.push(['Opening',f,fyStart(f),'"'+p.name+'"','Opening balance','','',op(p,f)].join(','));
+      if(op(p,f)) L.push(['Opening',f,fyStart(f),csvq(p.name),'Opening balance','','',op(p,f)].join(','));
     });
   });
   state.entries.filter(function(e){return all||(e.date>=lo&&e.date<=hi)})
     .sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id})
     .forEach(function(e){
       var p=partyById(e.partyId);
-      L.push(['Entry',fyOf(e.date),e.date,'"'+(p?p.name:'?')+'"',TYPES[e.type].label,
-        '"'+(e.ref||'')+'"','"'+(e.note||'')+'"',e.amount].join(','));
+      L.push(['Entry',fyOf(e.date),e.date,csvq(p?p.name:'?'),TYPES[e.type].label,
+        csvq(e.ref),csvq(e.note),e.amount].join(','));
     });
   download(L.join('\n'),'text/csv', all?'creditors-all-years.csv':'creditors-'+ui.fy+'.csv');
 }
@@ -1157,7 +1643,8 @@ function installManifest(){
       '<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512">'+
       '<rect width="512" height="512" rx="96" fill="#0F2E38"/>'+
       '<text x="256" y="342" font-family="Georgia,serif" font-size="270" fill="#DFA13C" text-anchor="middle">\u20B9</text></svg>');
-    var t=document.createElement('link'); t.rel='apple-touch-icon'; t.href=icon;
+    var t=document.createElement('link'); t.rel='apple-touch-icon';
+    t.href = hosted() ? 'apple-touch-icon.png' : icon;   // real PNG when the bundle is served
     document.head.appendChild(t);
 
     var l=document.createElement('link'); l.rel='manifest';
@@ -1249,6 +1736,10 @@ function bind(){
     ui.ason=clamp(e.target.value,fyStart(ui.fy),fyEnd(ui.fy)); e.target.value=ui.ason; renderBalance()});
   $('#asonEnd').addEventListener('click',function(){
     ui.ason=fyEnd(ui.fy); $('#ason').value=ui.ason; renderBalance()});
+  $('#asonToday').addEventListener('click',function(){
+    var t=clamp(today,fyStart(ui.fy),fyEnd(ui.fy));
+    if(t!==today) toast('Today is outside FY '+ui.fy+'. Showing '+dmy(t)+'.','err');
+    ui.ason=t; $('#ason').value=t; renderBalance()});
   $('#dayDate').addEventListener('change',function(e){ if(!e.target.value)return;
     ui.day=clamp(e.target.value,fyStart(ui.fy),fyEnd(ui.fy)); e.target.value=ui.day; renderDaily()});
   $('#regMonth').addEventListener('change',function(e){ui.regMonth=e.target.value; renderRegister()});
@@ -1259,13 +1750,67 @@ function bind(){
       x.setAttribute('aria-pressed',String(x===b))});
     renderRegister();
   });
-  $('#retry').addEventListener('click',function(){doSave()});
-  $('#balSearch').addEventListener('input',function(e){ui.q=e.target.value; renderBalance()});
-  $('#partySearch').addEventListener('input',function(e){ui.qp=e.target.value; renderParties()});
+  $('#saveNow').addEventListener('click',function(){doSave(true); cloudPush()});
+
+  var c0=cfgGet();
+  if(c0){
+    $('#cfgKey').value=c0.apiKey||''; $('#cfgUrl').value=c0.databaseURL||'';
+    $('#cfgProj').value=c0.projectId||''; $('#cfgDom').value=c0.authDomain||'';
+    $('#cfgLedger').value=c0.ledger||'main';
+    if(c0.region) $('#cfgRegion').value=c0.region;
+
+    cloudSet(cloud.state==='live'?'live':'off',
+      cloud.state==='live'?'Connected as '+(cloud.user&&cloud.user.email):'Set up, not connected');
+  }
+  $('#cfgSave').addEventListener('click',function(){
+    var region=$('#cfgRegion').value;
+    var inst=instFrom($('#cfgUrl').value);
+    var url = (region==='auto') ? null : normUrl($('#cfgUrl').value,region);
+    var c={apiKey:$('#cfgKey').value.trim(),databaseURL:url||'',instance:inst||'',
+      region:region,
+      projectId:$('#cfgProj').value.trim(),authDomain:$('#cfgDom').value.trim(),
+      ledger:$('#cfgLedger').value.trim()||'main',
+      ledgerOnly:true};
+    if(!c.apiKey){msg('#cfgMsg','apiKey is required.','err');return}
+    if(!inst){
+      msg('#cfgMsg','Could not find a database name in that. Paste the link from your Firebase '+
+        'console Data page, or the URL shown above the data tree.','err');return}
+
+    function finish(cc){
+      if(!cfgPut(cc)){msg('#cfgMsg','Could not save the settings on this device.','err');return}
+      $('#cfgUrl').value=cc.databaseURL;
+      if(cc.region!=='auto') $('#cfgRegion').value=cc.region;
+      msg('#cfgMsg','Saved, using '+cc.databaseURL+
+        ' \u2014 sign out and sign in with your PIN to start syncing.','ok');
+    }
+    if(c.databaseURL){ finish(c); return }
+    msg('#cfgMsg','Looking for your database in all three regions\u2026','');
+    detectUrl(inst).then(function(found){
+      if(!found){
+        msg('#cfgMsg','Could not reach that database in any region. Check the name, or pick the '+
+          'region yourself from the dropdown \u2014 it is shown above the data tree in your console.','err');
+        return;
+      }
+      c.databaseURL=found;
+      c.region=(found.indexOf('firebaseio.com')>=0)?'us-central1':found.split('.')[1];
+      finish(c);
+    });
+  });
+  $('#cfgOff').addEventListener('click',function(){
+    if(!confirm('Turn off cloud sync on this device?\n\nThe records already on this device stay. Sign-in goes back to the PIN.')) return;
+    cloudOff(); cfgPut(null);
+    ['#cfgKey','#cfgUrl','#cfgProj','#cfgDom'].forEach(function(x){$(x).value=''});
+    msg('#cfgMsg','Cloud sync turned off on this device.','ok');
+  });
+  var qt=null;
+  function debounced(fn){return function(e){var v=e.target.value;
+    clearTimeout(qt); qt=setTimeout(function(){fn(v)},220)}}
+  $('#balSearch').addEventListener('input',debounced(function(v){ui.q=v; renderBalance()}));
+  $('#partySearch').addEventListener('input',debounced(function(v){ui.qp=v; renderParties()}));
 
   $('#regGrid').addEventListener('click',function(e){
     var b=e.target.closest('button[data-open]'); if(!b)return;
-    ui.ledParty=Number(b.dataset.open); goTab('ledger');
+    ui.ledParty=Number(b.dataset.open); ui.focusDate=b.dataset.date; goTab('ledger');
   });
   $('#regGrid').addEventListener('change',function(e){
     var i=e.target.closest('input[data-date]'); if(!i)return;
@@ -1274,9 +1819,10 @@ function bind(){
     var d=i.dataset.date, pid=Number(i.dataset.party), es=cellEntries(d,pid,ui.regType);
     if(ROLES[role].types.indexOf(ui.regType)<0){ renderRegister(); return }
     if(r.v){
-      if(es.length){ es[0].amount=r.v; es[0].by=role }
-      else state.entries.push({id:nextId++,date:d,partyId:pid,type:ui.regType,amount:r.v,ref:'',note:'',by:role});
+      if(es.length){ es[0].amount=r.v; es[0].by=role; touchE(es[0]) }
+      else state.entries.push(touchE({id:newId(),date:d,partyId:pid,type:ui.regType,amount:r.v,ref:'',note:'',by:role}));
     }else if(es.length){
+      killRec('entries',es[0].id);
       state.entries.splice(state.entries.indexOf(es[0]),1);
     }
     queueSave(); renderRegister();
@@ -1292,8 +1838,10 @@ function bind(){
     var id=Number(b.dataset.rm);
     var x=null; state.entries.forEach(function(en){if(en.id===id)x=en});
     if(!x)return;
-    if(!confirm('Delete this '+TYPES[x.type].label.toLowerCase()+' of '+
-      num(x.amount)+' dated '+dmy(x.date)+'?')) return;
+    var xp=partyById(x.partyId);
+    if(!confirm('Delete this '+TYPES[x.type].label.toLowerCase()+' of '+num(x.amount)+
+      '\ndated '+dmy(x.date)+'\nfor '+(xp?xp.name:'?')+'?')) return;
+    killRec('entries',x.id);
     state.entries.splice(state.entries.indexOf(x),1);
     queueSave(); renderLedger();
   });
@@ -1307,10 +1855,14 @@ function bind(){
     var r=parseAmount($('#txAmt').value);
     if(!r.ok){msg('#txMsg',r.msg,'err');return}
     if(!r.v){msg('#txMsg','Enter an amount greater than zero.','err');return}
-    if(d>today && !confirm('That date is in the future. Add it anyway?')) return;
     var t=$('#txType').value;
-    state.entries.push({id:nextId++,date:d,partyId:p.id,type:t,amount:r.v,
-      ref:$('#txRef').value.trim(),note:$('#txNote').value.trim(),by:role});
+    if(d>today && !confirm('That date is in the future. Add it anyway?')) return;
+    var dup=state.entries.filter(function(e){
+      return e.partyId===p.id&&e.date===d&&e.type===t&&Math.abs(e.amount-r.v)<EPS});
+    if(dup.length && !confirm('An identical '+TYPES[t].label.toLowerCase()+' of '+num(r.v)+
+      ' for '+p.name+' on '+dmy(d)+' already exists.\n\nAdd a second one anyway?')) return;
+    state.entries.push(touchE({id:newId(),date:d,partyId:p.id,type:t,amount:r.v,
+      ref:$('#txRef').value.trim().slice(0,40),note:$('#txNote').value.trim().slice(0,120),by:role}));
     $('#txAmt').value=''; $('#txRef').value=''; $('#txNote').value='';
     msg('#txMsg',TYPES[t].label+' of '+num(r.v)+
       ' added for '+p.name+' on '+dmy(d)+'.','ok');
@@ -1322,7 +1874,7 @@ function bind(){
     var p=partyById(Number(i.dataset.op)); if(!p)return;
     var n=Number(i.value);
     if(!isFinite(n)){alert('Opening balance must be a number.'); renderParties(); return}
-    p.openings=p.openings||{}; p.openings[ui.fy]=Math.round(n*100)/100;
+    p.openings=p.openings||{}; p.openings[ui.fy]=Math.round(n*100)/100; touchP(p);
     queueSave(); renderParties();
   });
   $('#partiesBody').addEventListener('click',function(e){
@@ -1330,10 +1882,14 @@ function bind(){
     var id=Number(b.dataset.del), p=partyById(id);
     var n=state.entries.filter(function(x){return x.partyId===id}).length;
     if(!confirm('Remove '+p.name+' and its '+n+' entries across all years?\n\nDownload a backup first if you are unsure.')) return;
+    killRec('parties',id);
+    state.entries.filter(function(x){return x.partyId===id})
+      .forEach(function(x){killRec('entries',x.id)});
     state.parties=state.parties.filter(function(x){return x.id!==id});
     state.entries=state.entries.filter(function(x){return x.partyId!==id});
     if(ui.ledParty===id) ui.ledParty=state.parties.length?state.parties[0].id:null;
     queueSave(); renderParties();
+    var back=$('#partySearch'); if(back&&back.focus) back.focus();
   });
   $('#addParty').addEventListener('click',function(){
     var name=$('#newName').value.trim();
@@ -1341,8 +1897,8 @@ function bind(){
     if(state.parties.some(function(p){return p.name.toLowerCase()===name.toLowerCase()})){
       msg('#addMsg',name+' is already on the list.','err'); return}
     var n=Number($('#newOp').value)||0;
-    var p={id:nextId++,name:name,openings:{}}; p.openings[ui.fy]=Math.round(n*100)/100;
-    state.parties.push(p);
+    var p={id:newId(),name:name,openings:{}}; p.openings[ui.fy]=Math.round(n*100)/100;
+    state.parties.push(touchP(p));
     if(!ui.ledParty) ui.ledParty=p.id;
     $('#newName').value=''; $('#newOp').value='';
     msg('#addMsg',name+' added.','ok');
@@ -1357,7 +1913,7 @@ function bind(){
     if(!confirm('Set every opening balance for '+nx+' from the closing balance of '+ui.fy+'?'+
       (prev?'\n\n'+prev+' supplier(s) already have an opening balance for '+nx+' and will be replaced.':''))) return;
     rows.forEach(function(r){r.p.openings=r.p.openings||{};
-      r.p.openings[nx]=Math.round(r.bal*100)/100});
+      r.p.openings[nx]=Math.round(r.bal*100)/100; touchP(r.p)});
     queueSave(); msg('#carryMsg','Opening balances for '+nx+' updated from '+ui.fy+'.','ok'); renderParties();
   });
 
@@ -1391,11 +1947,8 @@ function bind(){
       if(!d){msg('#bkMsg','That file could not be read as a backup.','err'); return}
       if(!confirm('Replace everything currently in the app with this backup?\n\n'+
         d.parties.length+' suppliers, '+d.entries.length+' entries.')) return;
-      state=d;
-      var ids=[0];
-      state.parties.forEach(function(p){ids.push(p.id)});
-      state.entries.forEach(function(x){ids.push(x.id)});
-      nextId=1+Math.max.apply(null,ids);
+      state=d; state.pristine=false;
+      reindex();
       buildFyList();
       $('#fy').innerHTML=FY_LIST.map(function(x){return '<option>'+x+'</option>'}).join('');
       if(FY_LIST.indexOf(ui.fy)<0) ui.fy=FY_LIST[0];
@@ -1410,12 +1963,16 @@ function bind(){
   $('#resetAll').addEventListener('click',function(){
     if(!confirm('This wipes your changes and reloads the original spreadsheet data.\n\nDownload a backup first if you need one. Continue?')) return;
     if(prompt('Type RESET to confirm.')!=='RESET'){msg('#resetMsg','Reset cancelled.','');return}
+    download(JSON.stringify({app:'creditors',version:3,saved:new Date().toISOString(),
+      note:'automatic backup taken just before a reset',
+      parties:state.parties,entries:state.entries,tomb:state.tomb,pins:state.pins},null,1),
+      'application/json','creditors-before-reset-'+today+'.json');
     seedState(); buildFyList();
     $('#fy').innerHTML=FY_LIST.map(function(x){return '<option>'+x+'</option>'}).join('');
     ui.fy='2026-27'; $('#fy').value=ui.fy;
     ui.ledParty=state.parties[0].id;
     setYear(ui.fy,null); queueSave(); renderAll();
-    msg('#resetMsg','Original data restored.','ok');
+    msg('#resetMsg','Original data restored. A backup of what was here was downloaded first.','ok');
   });
 }
 

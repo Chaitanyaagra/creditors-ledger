@@ -53,18 +53,79 @@ B. INSTALL IT AS AN APP  (about 2 minutes, free, no account)
    internet at all.
 
 
-EACH DEVICE KEEPS ITS OWN DATA
-------------------------------
-This is the one thing to be clear about. Installing on a laptop and a phone
-gives you two separate sets of records. They do NOT sync.
+CLOUD SYNC (optional - off until you set it up)
+-----------------------------------------------
+Without it, each device keeps its own separate records and you move data with
+Backup / Restore on the Data tab.
 
-To move data across, use the Data tab:
-  on the first device   Backup (.json)
-  on the second device  Restore from backup
+With it, every device that signs in shares one ledger. Each entry and each
+supplier syncs as its own record, so you can add a payment on your laptop while
+your data-entry person adds a purchase on their phone, and neither wipes out the
+other. If a device is offline it keeps working and catches up when it reconnects.
 
-Real cross-device syncing needs a server, which this app deliberately does not
-have - your creditor figures never leave your own devices.
+SETTING IT UP  (about 10 minutes, free tier is plenty)
 
+ 1. Go to  https://console.firebase.google.com  and create a project.
+
+ 2. Build > Realtime Database > Create Database.
+    Pick a location, then choose LOCKED MODE. Not test mode.
+    You do not need to note anything down.
+
+ 3. Realtime Database > Rules. Replace everything with:
+
+      {
+        "rules": {
+          "ledgers": {
+            "$ledger": {
+              ".read":  "auth != null",
+              ".write": "auth != null"
+            }
+          }
+        }
+      }
+
+    Publish.
+
+ 4. Build > Authentication > Get started > Sign-in method >
+    ANONYMOUS > Enable > Save.
+    That is all. You do not create any user accounts. The app signs itself in
+    in the background; you and your staff keep using the PIN as before.
+
+ 5. Project settings (gear icon) > Your apps > Web app (</> icon) if you have
+    not registered one already.
+
+ 6. Open the app as owner, Data tab, Cloud sync. apiKey, projectId and
+    authDomain are already filled in.
+    In the databaseURL box, paste the whole link from your browser's address
+    bar while you are on the Realtime Database Data page. Leave region on
+    "Work it out for me" - the app checks all three regions and keeps the one
+    your database answers from.
+    Save and turn on. Sign out, sign back in with your PIN, and it syncs.
+
+ 7. On the second device, install the app and do step 6 with the same values.
+    A device that has never been used adopts whatever is already in the cloud,
+    so nothing gets duplicated. The PINs travel with the ledger, so a PIN you
+    change on one device applies everywhere.
+
+WHAT THIS PROTECTS YOU FROM, AND WHAT IT DOES NOT
+
+  It does stop:  anyone scanning the internet for open Firebase databases.
+                 That is the common real-world way these leak, and the rule
+                 "auth != null" shuts it.
+
+  It does not stop:  anyone who has a copy of your index.html. The apiKey is
+                 inside it, anonymous sign-in is open to all comers, and the
+                 PIN is checked in the browser, not by Firebase. Such a person
+                 can read and change the whole ledger.
+
+  So the file itself is the thing to guard. Do not put the app on a public
+  address you hand out, do not post the link anywhere, and only install it on
+  devices you or your staff control.
+
+  If you later want a real lock, switch Authentication to Email/Password and
+  create one account per person. Then Firebase - not the browser - decides who
+  gets in, and losing the file no longer means losing the data. Say the word
+  and it can be changed over.
 
 BACKUPS
 -------
@@ -99,7 +160,7 @@ that, their real age is understated.
 
 UPDATING LATER
 --------------
-Replace index.html, change  CACHE = 'creditors-v4'  in sw.js to 'creditors-v5',
+Replace index.html, change  CACHE = 'creditors-v9'  in sw.js to 'creditors-v10',
 and drag the folder to Netlify Drop again.
 
 

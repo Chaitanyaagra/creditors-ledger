@@ -14,7 +14,7 @@
     --ink:#12262E; --soft:#5A7077;
     --due:#A82C22; --due-bg:#FBECEA;
     --adv:#1D6E52; --adv-bg:#E7F3EE;
-    --gold:#DFA13C; --gold-2:#B57A1C;
+    --gold:#DFA13C; --gold-2:#9A6818;
     --b1:#2E7D64; --b2:#DFA13C; --b3:#D2702A; --b4:#A82C22;
     --zebra:#FAFCFC; --head:#F4F8F7; --head2:#F0F5F5;
     --tint-add:#FBF6EC; --tint-cut:#EDF3F4;
@@ -22,7 +22,7 @@
     --focus-bg:#FCF3E1; --multi-bg:#FBF2DF; --multi-fg:#8A5D0F;
     --flag-bg:#FDF6E8; --flag-fg:#5B4212;
     --tag3-bg:#FBEDE2; --tag3-fg:#9C4E15;
-    --bar-bg:#E8EEED; --field:#FBFDFD;
+    --bar-bg:#E8EEED; --field:#FBFDFD; --muted:#7A8E92;
     --on-deep:#EAF2F1; --on-deep-soft:#9FB8BB; --on-deep-tab:#A8C0C2;
     --toast-ok:#4BB98C; --toast-err:#E0655A;
     --stat-ok:#7FD3B0; --stat-bad:#F0A79F;
@@ -63,7 +63,8 @@
     font-size:13.5px;margin:0 0 18px;max-width:82ch;border-radius:0 3px 3px 0}
   .flag b{font-weight:600}
   .flag.bad{border-color:var(--due);background:var(--due-bg);color:#6E211A}
-  .empty{border:1px dashed var(--rule-2);padding:26px;text-align:center;color:var(--soft);font-size:14px;border-radius:3px}
+  .empty{border:1px dashed var(--rule-2);padding:26px;text-align:center;color:var(--soft);font-size:14px;
+    border-radius:3px;display:flex;flex-direction:column;align-items:center;gap:12px}
 
   /* aging strip */
   .aging{background:var(--card);border:1px solid var(--rule);border-radius:4px;
@@ -99,7 +100,7 @@
   @media (hover:hover){ .plink:hover{color:var(--gold-2)} }
   tr.sum{background:var(--head)!important;border-bottom:0}
   tr.sum th,tr.sum td{border-top:2px solid var(--deep);font-weight:600}
-  .due{color:var(--due)} .adv{color:var(--adv)} .soft2{color:var(--soft)} .zero{color:var(--rule-2)}
+  .due{color:var(--due)} .adv{color:var(--adv)} .soft2{color:var(--soft)} .zero{color:var(--muted)}
   .pill{display:inline-block;padding:2px 9px;border-radius:11px;font-weight:600;font-size:13.5px}
   .pill.due{background:var(--due-bg)} .pill.adv{background:var(--adv-bg)}
   .tag{display:inline-block;padding:1px 7px;border-radius:9px;font-size:11.5px;font-weight:600}
@@ -414,7 +415,7 @@
       <option value="purchase">Purchase</option><option value="credit">Credit note</option>
       <option value="payment" selected>Payment</option><option value="debit">Debit note</option>
     </select></div>
-    <div class="fld"><label for="txAmt">Amount</label><input type="number" id="txAmt" min="0" step="0.01" placeholder="0"></div>
+    <div class="fld"><label for="txAmt">Amount</label><input type="text" id="txAmt" inputmode="decimal" placeholder="0"></div>
     <div class="fld"><label for="txRef">Bill / UTR no.</label><input type="text" id="txRef" maxlength="40" placeholder="optional"></div>
     <div class="fld"><label for="txNote">Remark</label><input type="text" id="txNote" maxlength="120" placeholder="optional"></div>
     <button class="btn gold" id="txAdd">Add entry</button>
@@ -474,7 +475,7 @@
   <div class="form edit-only">
     <div class="fld"><label for="newName">Name</label><input type="text" id="newName" maxlength="60" placeholder="e.g. RBRR"></div>
     <div class="fld"><label for="newOp">Opening balance <span id="opFy"></span></label>
-      <input type="number" id="newOp" step="0.01" placeholder="0"></div>
+      <input type="text" id="newOp" inputmode="decimal" placeholder="0"></div>
     <button class="btn" id="addParty">Add supplier</button>
   </div>
   <p class="msg" id="addMsg"></p>
@@ -613,7 +614,7 @@
 <script>
 (function(){
 'use strict';
-var BUILD='19 \u00b7 2026-09-08';
+var BUILD='24 \u00b7 2026-09-08';
 var KEY='creditors:v3', OLDKEYS=['party-register:v2','payment-register:v1'];
 var SEED={"purchase":[["2026-04-01","RBRR",312894.0],["2026-04-01","VCPL",65518.0],["2026-04-01","RBI",264243.0],["2026-04-07","RBRR",185192.0],["2026-04-08","RBI",173241.0],["2026-04-09","RBRR",72875.0],["2026-04-10","RBI",46021.0],["2026-04-11","RBRR",122746.0],["2026-04-14","RBI",266244.0],["2026-04-15","RBRR",3250.0],["2026-04-16","RBI",179406.0],["2026-04-21","RBI",267801.0],["2026-04-22","RBI",83198.0],["2026-04-23","RBI",207362.0],["2026-04-25","VCPL",133217.0],["2026-04-27","RBD",7179.0],["2026-04-27","VCPL",86307.0],["2026-04-28","RBRR",106988.0],["2026-04-28","RBI",119121.0],["2026-04-29","R N FOODs",4500.0],["2026-04-30","RBI",83194.0],["2026-05-01","RBRR",52801.0],["2026-05-01","RBI",156000.0],["2026-05-02","RBRR",62761.0],["2026-05-04","RBI",96002.0],["2026-05-05","RBRR",29697.0],["2026-05-05","RBI",155423.0],["2026-05-06","RBI",106306.0],["2026-05-07","RBI",73000.0],["2026-05-08","RBI",166531.0],["2026-05-09","RBI",141955.0],["2026-05-14","RBRR",450490.0],["2026-05-14","VCPL",110350.0],["2026-05-14","RBI",178119.0],["2026-05-18","RBI",266285.0],["2026-05-19","RBRR",35302.0],["2026-05-20","RBRR",4250.0],["2026-05-20","RBI",96002.0],["2026-05-21","RBI",169002.0],["2026-05-22","RBI",183601.0],["2026-05-27","RBI",83202.0],["2026-05-28","VCPL",3776.0],["2026-05-29","RBI",274600.0],["2026-06-01","VCPL",15340.0],["2026-06-02","RBI",317070.0],["2026-06-03","RBI",99842.0],["2026-06-04","RBRR",203972.0],["2026-06-05","RBI",166396.0],["2026-06-09","RBI",271098.0],["2026-06-10","RBRR",154242.0],["2026-06-10","R N FOODs",53076.0],["2026-06-10","RBI",141866.0],["2026-06-11","RBI",60251.0],["2026-06-13","VCPL",9000.0],["2026-06-15","RBRR",44352.0],["2026-06-15","R N FOODs",4600.0],["2026-06-15","RBI",275206.0],["2026-06-17","RBI",185902.0],["2026-06-18","RBRR",94355.0],["2026-06-18","VCPL",27140.0],["2026-06-18","R N FOODs",121968.0],["2026-06-19","RBRR",49439.0],["2026-06-20","RBI",181858.0],["2026-06-22","RBI",420380.0],["2026-06-23","RBRR",14400.0],["2026-06-24","RBRR",275200.0],["2026-06-24","RBI",148002.0],["2026-06-25","RBRR",56200.0],["2026-06-27","RBI",73000.0],["2026-06-30","R N FOODs",66890.0],["2026-07-01","RBD",1540.0],["2026-07-01","RBI",276008.0],["2026-07-02","RBRR",268106.0],["2026-07-02","RBI",227344.0],["2026-07-03","RBI",73000.0],["2026-07-04","RBRR",30000.0],["2026-07-04","RBI",140159.0],["2026-07-07","RBI",201121.0],["2026-07-10","RBRR",257955.0],["2026-07-11","RBRR",143957.0],["2026-07-11","R N FOODs",22176.0],["2026-07-13","R N FOODs",26000.0],["2026-07-13","RBI",154402.0],["2026-07-15","RBI",95800.0],["2026-07-17","RBRR",250.0],["2026-07-18","RBRR",84343.0],["2026-07-18","VCPL",30680.0],["2026-07-20","RBD",3590.0],["2026-07-20","R N FOODs",33264.0],["2026-07-22","RBRR",126000.0],["2026-07-22","RBD",3850.0],["2026-07-23","VCPL",30680.0],["2026-07-24","RBRR",147530.0],["2026-07-25","RBI",213904.0],["2026-07-27","R N FOODs",29460.0],["2026-07-28","RBI",42286.0],["2026-07-29","RBRR",111856.0],["2026-07-31","RBRR",42963.0],["2026-07-31","RBI",463399.0],["2026-08-01","RBI",180403.0],["2026-08-04","RBRR",420962.0],["2026-08-04","R N FOODs",24000.0],["2026-08-05","RBRR",37251.0],["2026-08-05","RBI",107202.0],["2026-08-07","RBI",99900.0],["2026-08-10","RBI",108593.0],["2026-08-11","RBRR",199969.0],["2026-08-11","R N FOODs",125620.0],["2026-08-11","RBI",168000.0],["2026-08-14","RBRR",6000.0],["2026-08-14","RBI",92800.0],["2026-08-17","RBRR",9819.0],["2026-08-17","R N FOODs",6300.0],["2026-08-17","RBI",10144.0],["2026-08-18","RBRR",9450.0],["2026-08-18","RBI",140589.0],["2026-08-19","RBI",37559.0],["2026-08-20","RBRR",71879.0],["2026-08-20","RBD",190116.0],["2026-08-20","R N FOODs",50504.0],["2026-08-20","RBI",77720.0],["2026-08-22","RBRR",51989.83],["2026-08-22","RBI",207000.0]],"payment":[["2026-04-04","RBRR",150000.0],["2026-04-04","RBI",150000.0],["2026-04-06","RBRR",400000.0],["2026-04-06","RBD",150000.0],["2026-04-06","VCPL",150000.0],["2026-04-06","RBI",150000.0],["2026-04-08","RBRR",300000.0],["2026-04-09","RBI",350000.0],["2026-04-13","RBD",100000.0],["2026-04-15","RBD",150000.0],["2026-04-15","RBI",100000.0],["2026-04-16","RBRR",100000.0],["2026-04-18","RBI",100000.0],["2026-04-21","VCPL",100000.0],["2026-04-21","RBI",150000.0],["2026-04-23","RBRR",100000.0],["2026-04-23","RBD",38412.0],["2026-04-23","VCPL",1771.0],["2026-04-23","RBI",300000.0],["2026-04-27","RBI",100000.0],["2026-04-28","RBRR",100000.0],["2026-04-29","RBI",150000.0],["2026-05-01","RBI",100000.0],["2026-05-06","VCPL",150000.0],["2026-05-07","RBRR",200000.0],["2026-05-08","RBI",100000.0],["2026-05-09","RBRR",100000.0],["2026-05-12","RBD",3030.0],["2026-05-13","RBRR",100000.0],["2026-05-13","VCPL",100000.0],["2026-05-13","RBI",124958.0],["2026-05-15","RBRR",200000.0],["2026-05-15","RBI",200000.0],["2026-05-16","RBI",150000.0],["2026-05-19","RBRR",150000.0],["2026-05-20","RBI",350000.0],["2026-05-22","VCPL",100000.0],["2026-05-22","RBI",100000.0],["2026-05-23","RBI",100000.0],["2026-05-26","RBI",100000.0],["2026-05-27","RBI",150000.0],["2026-05-29","RBRR",150000.0],["2026-05-29","VCPL",100000.0],["2026-05-29","RBI",200000.0],["2026-05-30","RBI",200000.0],["2026-06-01","RBI",100000.0],["2026-06-02","RBRR",100000.0],["2026-06-03","RBI",100000.0],["2026-06-05","RBI",100000.0],["2026-06-09","RBI",100000.0],["2026-06-10","RBI",200000.0],["2026-06-11","RBI",200000.0],["2026-06-12","RBI",150000.0],["2026-06-17","RBRR",450000.0],["2026-06-17","VCPL",100000.0],["2026-06-19","RBI",300000.0],["2026-06-20","RBI",100000.0],["2026-06-22","RBRR",50000.0],["2026-06-22","RBD",11221.48],["2026-06-22","R N FOODs",50000.0],["2026-06-22","RBI",250000.0],["2026-06-24","RBI",100000.0],["2026-06-26","RBI",310000.0],["2026-06-29","RBI",100000.0],["2026-06-30","RBI",200000.0],["2026-07-01","RBRR",200000.0],["2026-07-01","RBI",100000.0],["2026-07-02","RBI",100000.0],["2026-07-03","RBI",100000.0],["2026-07-06","RBI",150000.0],["2026-07-07","RBI",100000.0],["2026-07-11","RBI",200000.0],["2026-07-14","RBI",200000.0],["2026-07-15","RBRR",100000.0],["2026-07-17","RBI",100000.0],["2026-07-18","RBRR",100000.0],["2026-07-18","RBI",200000.0],["2026-07-21","RBI",150000.0],["2026-07-24","R N FOODs",100000.0],["2026-07-27","RBI",200000.0],["2026-07-28","RBRR",100000.0],["2026-07-29","RBI",150000.0],["2026-07-30","RBRR",100000.0],["2026-07-31","RBRR",200000.0],["2026-07-31","RBI",200000.0],["2026-08-01","RBI",250000.0],["2026-08-04","RBI",100000.0],["2026-08-10","R N FOODs",3960.0],["2026-08-10","RBI",14478.0],["2026-08-12","RBI",250000.0],["2026-08-13","RBRR",200000.0],["2026-08-13","R N FOODs",100000.0],["2026-08-13","RBI",100000.0],["2026-08-17","RBRR",350000.0],["2026-08-17","RBI",300000.0],["2026-08-18","RBI",100000.0],["2026-08-19","RBI",100000.0],["2026-08-20","RBRR",100000.0],["2026-08-20","RBD",8980.0],["2026-08-20","RBI",100000.0],["2026-08-22","RBRR",100000.0],["2026-08-24","VCPL",50000.0],["2026-08-24","R N FOODs",100000.0],["2026-08-25","RBI",100000.0],["2026-08-26","RBRR",300000.0],["2026-08-26","RBI",150000.0],["2026-08-27","RBI",100000.0],["2026-08-31","RBI",100000.0],["2026-09-01","RBI",100000.0],["2026-09-03","RBRR",100000.0],["2026-09-04","RBRR",100000.0],["2026-09-04","VCPL",50000.0],["2026-09-05","RBRR",250000.0],["2026-09-05","RBI",250000.0],["2026-09-06","RBRR",100000.0],["2026-09-06","RBI",100000.0],["2026-09-07","RBRR",100000.0],["2026-09-08","VCPL",50000.0],["2026-09-08","R N FOODs",40000.0],["2026-09-08","RBI",250000.0]],"credit":[],"debit":[]};
 
@@ -659,8 +660,8 @@ function pinHash(s){
   return h.toString(36);
 }
 function pins(){
-  state.pins=state.pins||{admin:pinHash(DEFAULT_PINS.admin),entry:pinHash(DEFAULT_PINS.entry)};
-  if(!state.pins.viewer) state.pins.viewer=pinHash(DEFAULT_PINS.viewer);   // ledgers from before this role existed
+  if(!state.pins){ state.pins={admin:pinHash(DEFAULT_PINS.admin),entry:pinHash(DEFAULT_PINS.entry)}; metaDirty.pins=true }
+  if(!state.pins.viewer){ state.pins.viewer=pinHash(DEFAULT_PINS.viewer); metaDirty.pins=true }   // ledgers from before this role existed
   return state.pins;
 }
 function pinsAreDefault(){
@@ -672,7 +673,7 @@ function can(t){return role&&ROLES[role].tabs.indexOf(t)>=0}
 var $=function(s){return document.querySelector(s)};
 function localToday(){var d=new Date();
   return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
-var today=localToday();
+function today(){return localToday()}
 
 /* ---------- storage adapter: Claude storage -> localStorage -> memory ---------- */
 var store=(function(){
@@ -720,6 +721,12 @@ function num(n){n=Number(n);
 function cell(n){return n?num(n):''}
 function esc(s){return String(s).replace(/[&<>"']/g,function(c){
   return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function emptyBox(text){
+  var cta = (role==='admin')
+    ? '<button class="btn small gold" data-goto-parties>Go to Parties</button>'
+    : '';
+  return '<div class="empty"><span>'+text+'</span>'+cta+'</div>';
+}
 function op(p,f){return (p.openings&&p.openings[f])||0}
 function partyById(id){for(var i=0;i<state.parties.length;i++) if(state.parties[i].id===id) return state.parties[i]; return null}
 
@@ -750,7 +757,7 @@ function isDirty(){return rev!==savedRev}
 /* Each record carries its own `updated` stamp so two devices editing different
    rows can both win. Deletes leave a tombstone, otherwise a device that was
    offline would push the row straight back. */
-function now(){return Date.now()}
+function now(){return Date.now()+(cloud.timeOffset||0)}
 /* Ids are minted from the clock plus randomness, so two devices creating
    records at the same moment cannot land on the same number. */
 function newId(){
@@ -866,7 +873,8 @@ function startHeartbeat(){
    and each party is its own node, merged by whichever copy was edited last.
    Nothing here runs until the owner fills in the config on the Data tab. */
 var corrupt=null, blocked=false, firstSync=false;
-var cloud={cfg:null,mod:null,db:null,auth:null,user:null,state:'off',unsub:[],pushing:false};
+var cloud={cfg:null,mod:null,db:null,auth:null,user:null,state:'off',unsub:[],pushing:false,timeOffset:0};
+var metaDirty={pins:false,lockDelay:false,lockedYears:false};
 
 /* Baked into this copy of the app, so every device it is installed on syncs
    to the same ledger with no per-device setup. Filled in once by the owner;
@@ -979,6 +987,9 @@ function cloudConnect(){
     cloud.user=cred.user;
     cloudSet('live','Connected \u00b7 '+stamp());
     var m2=cloud.mod.db;
+    m2.onValue(m2.ref(cloud.db,'.info/serverTimeOffset'),function(s){
+      var off=s.val(); if(typeof off==='number') cloud.timeOffset=off;
+    });
     return m2.get(m2.ref(cloud.db, base()));
   }).then(function(snap){
     var val=snap.val()||{};
@@ -1025,8 +1036,15 @@ function cloudListen(){
   });
   cloud.unsub.push(m.onValue(r(cloud.db, base()+'/pins'),function(snap){
     var v=snap.val();
-    if(v&&v.admin&&(!state.pins||v.admin!==state.pins.admin||v.entry!==state.pins.entry)){
+    if(v&&v.admin&&JSON.stringify(v)!==JSON.stringify(state.pins||{})){
       state.pins=v; saveLocal();
+    }
+  }));
+  cloud.unsub.push(m.onValue(r(cloud.db, base()+'/lockDelay'),function(snap){
+    var v=snap.val();
+    if(v!==null&&v!==undefined&&v!==state.lockDelay){
+      state.lockDelay=v; saveLocal();
+      if($('#lockWhen')) $('#lockWhen').value=String(v);
     }
   }));
   cloud.unsub.push(m.onValue(r(cloud.db, base()+'/lockedYears'),function(snap){
@@ -1090,9 +1108,10 @@ function adoptRec(kind,id,rec){
 function cloudPush(){
   if(cloud.state!=='live'||cloud.pushing) return Promise.resolve();
   var todo={}, any=false;
+  var sentIds={entries:[],parties:[]}, sentMeta=[];
   ['entries','parties'].forEach(function(kind){
     Object.keys(pending[kind]).forEach(function(id){
-      any=true;
+      any=true; sentIds[kind].push(id);
       if(pending[kind][id]==='del'){ todo[base()+'/'+kind+'/'+id]=null }
       else{
         var arr=kind==='entries'?state.entries:state.parties, rec=null;
@@ -1102,15 +1121,27 @@ function cloudPush(){
     });
   });
   Object.keys(state.tomb||{}).forEach(function(k){ todo[base()+'/tomb/'+k]=state.tomb[k]; any=true });
-  if(state.pins){ todo[base()+'/pins']=state.pins; any=true }
-  if(state.lockDelay!==undefined){ todo[base()+'/lockDelay']=state.lockDelay; any=true }
-  if(state.lockedYears){ todo[base()+'/lockedYears']=state.lockedYears; any=true }
+  // Settings (pins, app-lock timing, financial-year locks) only go up when this
+  // device actually changed them - otherwise a device that is merely catching
+  // up on ordinary entries would blindly re-push its own possibly-stale copy
+  // and could stomp a more recent change made from another device.
+  if(metaDirty.pins&&state.pins){ todo[base()+'/pins']=state.pins; any=true; sentMeta.push('pins') }
+  if(metaDirty.lockDelay&&state.lockDelay!==undefined){ todo[base()+'/lockDelay']=state.lockDelay; any=true; sentMeta.push('lockDelay') }
+  if(metaDirty.lockedYears&&state.lockedYears){ todo[base()+'/lockedYears']=state.lockedYears; any=true; sentMeta.push('lockedYears') }
   if(!any) return Promise.resolve();
   cloud.pushing=true;
   var m=cloud.mod.db;
   return m.update(m.ref(cloud.db),todo).then(function(){
-    cloud.pushing=false; pending={entries:{},parties:{}};
+    cloud.pushing=false;
+    // Remove only the keys this push actually sent. Anything added to the
+    // queue while the request was in flight must survive to go out next time.
+    sentIds.entries.forEach(function(id){ delete pending.entries[id] });
+    sentIds.parties.forEach(function(id){ delete pending.parties[id] });
+    sentMeta.forEach(function(k){ metaDirty[k]=false });
     cloudSet('live','Synced \u00b7 '+stamp());
+    var more = Object.keys(pending.entries).length||Object.keys(pending.parties).length||
+      metaDirty.pins||metaDirty.lockDelay||metaDirty.lockedYears;
+    if(more) cloudPush();      // drain whatever piled up during this round trip
   }).catch(function(err){
     cloud.pushing=false; cloudSet('error',cloudWhy(err));
   });
@@ -1119,7 +1150,23 @@ function cloudPushAll(){
   if(cloud.state!=='live') return Promise.resolve();
   state.entries.forEach(function(e){ if(!e.updated) e.updated=now(); mark('entries',e.id) });
   state.parties.forEach(function(p){ if(!p.updated) p.updated=now(); mark('parties',p.id) });
+  // A full push is a deliberate "make the cloud match this device exactly"
+  // moment (first-ever setup, or right after a restore/reset), so settings
+  // go along with it too - unlike the routine per-entry pushes above.
+  metaDirty.pins=true; metaDirty.lockDelay=true; metaDirty.lockedYears=true;
   return cloudPush();
+}
+/* Restore and Reset both replace the whole local ledger. Without this, the
+   old cloud records would simply sit there unpushed-to, and the next sync
+   from any device could bring them straight back - the backup/reset would
+   look successful on screen while the shared ledger silently disagreed. */
+function cloudReplaceAll(oldParties,oldEntries){
+  var stillP={}, stillE={};
+  state.parties.forEach(function(p){stillP[p.id]=1});
+  state.entries.forEach(function(e){stillE[e.id]=1});
+  oldParties.forEach(function(p){ if(!stillP[p.id]) killRec('parties',p.id) });
+  oldEntries.forEach(function(e){ if(!stillE[e.id]) killRec('entries',e.id) });
+  cloudPushAll();
 }
 function cloudOff(){
   cloud.unsub.forEach(function(f){try{f()}catch(e){}}); cloud.unsub=[];
@@ -1143,8 +1190,11 @@ function seedState(){
 function maxId(list){var m=0;for(var i=0;i<list.length;i++){var v=list[i].id||0; if(v>m) m=v} return m}
 function reindex(){ nextId=1+Math.max(maxId(state.parties),maxId(state.entries)) }
 function normalise(d){
-  if(!d||!d.parties||!d.parties.length) return null;
-  d.entries=d.entries||[]; d.tomb=d.tomb||{}; d.lockedYears=d.lockedYears||{};
+  // A structurally valid save with zero suppliers left (everyone removed, or
+  // a brand-new cloud device still waiting on its first sync) is a real,
+  // legitimate state - not the same thing as a corrupt or missing file.
+  if(!d||!Array.isArray(d.parties)) return null;
+  d.entries=Array.isArray(d.entries)?d.entries:[]; d.tomb=d.tomb||{}; d.lockedYears=d.lockedYears||{};
   if(d.pristine===undefined) d.pristine=false;
   d.parties.forEach(function(p){
     if(!p.openings){p.openings={}; if(p.opening) p.openings['2026-27']=p.opening; delete p.opening}
@@ -1161,11 +1211,11 @@ function normalise(d){
 function buildFyList(){
   var s={}; state.entries.forEach(function(e){s[fyOf(e.date)]=1});
   state.parties.forEach(function(p){Object.keys(p.openings||{}).forEach(function(f){s[f]=1})});
-  s[fyOf(today)]=1;
+  s[fyOf(today())]=1;
   var years=Object.keys(s).map(function(f){return Number(f.slice(0,4))});
   var lo=years[0], hi=years[0];
   years.forEach(function(y){ if(y<lo)lo=y; if(y>hi)hi=y });
-  hi=Math.max(hi, Number(fyOf(today).slice(0,4))+4);   // always 5 years ahead
+  hi=Math.max(hi, Number(fyOf(today()).slice(0,4))+4);   // always 5 years ahead
   FY_LIST=[];
   for(var y=lo;y<=hi;y++) FY_LIST.push(y+'-'+String((y+1)%100).padStart(2,'0'));
 }
@@ -1198,12 +1248,12 @@ function boot(){
     }else{ seedState() }
     buildFyList();
     var dates=state.entries.map(function(e){return e.date}).sort();
-    var last=dates.length?dates[dates.length-1]:today;
+    var last=dates.length?dates[dates.length-1]:today();
     ui.fy = FY_LIST.indexOf(fyOf(last))>=0 ? fyOf(last) : FY_LIST[0];
     ui.ledParty = state.parties.length?state.parties[0].id:null;
     $('#fy').innerHTML=FY_LIST.map(function(f){return '<option>'+f+'</option>'}).join('');
     $('#fy').value=ui.fy;
-    setYear(ui.fy,last);
+    setYear(ui.fy,null);   // the year shown may follow the data, but the date shown is always today
     bind(); installManifest(); bindGate(); startHeartbeat();
     if(blocked){ warnCorrupt() } else { rev=1; doSave() }
   });
@@ -1223,7 +1273,7 @@ function warnCorrupt(){
   setTimeout(function(){
     var b=$('#dlRaw'); if(!b) return;
     b.addEventListener('click',function(){
-      download(corrupt.raw,'text/plain','creditors-unreadable-'+today+'.txt');
+      download(corrupt.raw,'text/plain','creditors-unreadable-'+today()+'.txt');
       toast('Saved. Send it over and it may be recoverable.','ok');
     });
   },0);
@@ -1291,6 +1341,7 @@ function resetIdle(){
 function signOut(){
   clearTimeout(idleTimer); clearTimeout(hideTimer); hideTimer=null;
   cloudOff();          // stop cloud listeners so nothing keeps writing to state after sign-out
+  var th=$('#toasts'); if(th) th.innerHTML='';   // an in-flight Undo must not act once nobody is signed in
   role=null;
   $('.app').classList.remove('on');
   $('#gate').hidden=false; $('#gate').style.display='flex';
@@ -1331,7 +1382,7 @@ function setYear(f,prefer){
   var keepMonth = ui.regMonth ? Number(ui.regMonth.slice(5,7)) : 0;
   ui.fy=f;
   var lo=fyStart(f), hi=fyEnd(f);
-  var pick=clamp(prefer&&prefer>=lo&&prefer<=hi?prefer:today,lo,hi);
+  var pick=clamp(prefer&&prefer>=lo&&prefer<=hi?prefer:today(),lo,hi);
   ui.ason=pick; ui.day=pick; ui.regMonth=pick.slice(0,7);
   if(keepMonth){                       // stay on the month you were working in
     var want=fyMonths(f).filter(function(m){return Number(m.slice(5,7))===keepMonth});
@@ -1401,7 +1452,7 @@ function renderBalance(){
   var d=ui.ason,f=ui.fy;
   $('#balCap').textContent='What you owe as on '+dmy(d)+'  \u00b7  FY '+f;
   if(!state.parties.length){
-    $('#balBody').innerHTML='<tr><td colspan="8"><div class="empty">No suppliers yet. Add one on the Parties tab.</div></td></tr>';
+    $('#balBody').innerHTML='<tr><td colspan="8">'+emptyBox('No suppliers yet.')+'</td></tr>';
     $('#agingBox').innerHTML=''; $('#lagFlag').innerHTML=''; return;
   }
   var rows=allRows(d,f);
@@ -1479,7 +1530,7 @@ function renderLedger(){
     return '<option value="'+p.id+'"'+(p.id===ui.ledParty?' selected':'')+'>'+esc(p.name)+
       (p.archived?' (archived)':'')+'</option>'}).join('');
   var p=partyById(ui.ledParty);
-  if(!p){ $('#ledBody').innerHTML='<tr><td colspan="8"><div class="empty">Add a supplier first.</div></td></tr>';
+  if(!p){ $('#ledBody').innerHTML='<tr><td colspan="8">'+emptyBox('Add a supplier first.')+'</td></tr>';
     $('#ledHead').innerHTML=''; return }
 
   var f=ui.fy, lo=fyStart(f), hi=fyEnd(f), on=ui.ason;
@@ -1563,9 +1614,9 @@ function renderRegister(){
   var ym=ui.regMonth, type=ui.regType;
   var activeP=state.parties.filter(function(p){return !p.archived});
   if(!activeP.length){
-    $('#regGrid').innerHTML='<tbody><tr><td><div class="empty">'+
-      (state.parties.length?'All your suppliers are archived. Unarchive one on the Parties tab to enter data for it.'
-                            :'Add a supplier first.')+'</div></td></tr></tbody>';return}
+    $('#regGrid').innerHTML='<tbody><tr><td>'+
+      emptyBox(state.parties.length?'All your suppliers are archived.':'Add a supplier first.')+
+      '</td></tr></tbody>';return}
   var dates=[];
   for(var d=1;d<=mDays(ym);d++) dates.push(ym+'-'+String(d).padStart(2,'0'));
   var head='<thead><tr><th>'+TYPES[type].label+'</th>'+dates.map(function(ds){
@@ -1578,7 +1629,7 @@ function renderRegister(){
       var es=cellEntries(ds,p.id,type);
       var v=es.reduce(function(a,e){return a+e.amount},0);
       rt+=v; col[i]+=v;
-      tds+='<td class="'+(ds===today?'today':'')+'">'+
+      tds+='<td class="'+(ds===today()?'today':'')+'">'+
         (es.length>1
           ? '<button class="multi" data-open="'+p.id+'" data-date="'+ds+'">'+cell(v)+' \u00d7'+es.length+'</button>'
           : '<input inputmode="decimal" data-date="'+ds+'" data-party="'+p.id+'"'+(readOnly()?' readonly':'')+
@@ -1599,9 +1650,7 @@ function renderDayEntry(){
   $('#regDay').value=date;
   var activeP=state.parties.filter(function(p){return !p.archived});
   if(!activeP.length){
-    $('#regDayList').innerHTML='<div class="empty">'+
-      (state.parties.length?'All your suppliers are archived. Unarchive one on the Parties tab to enter data for it.'
-                            :'Add a supplier first.')+'</div>'; return }
+    $('#regDayList').innerHTML=emptyBox(state.parties.length?'All your suppliers are archived.':'Add a supplier first.'); return }
   var total=0;
   var html=activeP.map(function(p){
     var es=cellEntries(date,p.id,type);
@@ -1625,7 +1674,7 @@ function renderDaily(){
   var d=ui.day;
   $('#dayCap').textContent='Activity on '+dmy(d);
   if(!state.parties.length){
-    $('#dayBody').innerHTML='<tr><td colspan="6"><div class="empty">Add a supplier first.</div></td></tr>';
+    $('#dayBody').innerHTML='<tr><td colspan="6">'+emptyBox('Add a supplier first.')+'</td></tr>';
     $('#dayNote').textContent=''; return}
   var rows=allRows(d,ui.fy), t={purchase:0,credit:0,payment:0,debit:0};
   var html=rows.map(function(r){
@@ -1672,7 +1721,7 @@ function renderParties(){
     var actionCls = r.p.archived ? 'gold' : 'ghost';
     return '<tr'+(r.p.archived?' style="opacity:.6"':'')+'><th class="party">'+esc(r.p.name)+
       (r.p.archived?' <span class="tag o2">archived</span>':'')+'</th>'+
-      '<td data-label="Opening"><input type="number" step="0.01" value="'+r.o+'" data-op="'+r.p.id+'"'+
+      '<td data-label="Opening"><input type="text" inputmode="decimal" value="'+num(r.o)+'" data-op="'+r.p.id+'"'+
       (readOnly()?' readonly':'')+' style="width:100%;max-width:150px;text-align:right" aria-label="'+esc(r.p.name)+' opening"></td>'+
       '<td data-label="Closing" class="'+(r.bal>EPS?'due':r.bal<-EPS?'adv':'zero')+'">'+fmt(r.bal)+'</td>'+
       '<td data-label="Entries" class="soft2">'+n+'</td>'+
@@ -1703,7 +1752,7 @@ function renderData(){
   }).join('');
   $('#buildNote').innerHTML='Build <b>'+BUILD+'</b>. If a feature described to you is missing '+
     'here, this is an older copy \u2014 replace index.html with the newest one. '+
-    'Cloud sync arrived in build 9, auto sign-out on exit in build 10, the phone layout in build 11, undo in build 12, sync baked in from build 14, mobile text fix in build 15, no more flash of stale figures on a new device in build 16, edit history and financial-year locking in build 17.';
+    'Build 24 fixed two colour-contrast issues that fell short of accessibility guidelines - the gold buttons\u2019 white text, and zero-value figures shown in tables - and added a direct \u201cGo to Parties\u201d button to every \u201cno suppliers yet\u201d screen for the owner, instead of only a text hint. Build 23 fixed the app opening on the date of its last saved entry instead of today - this is why different devices could show different figures on first glance, since each device\u2019s last entry date differed. Opening the app now always shows the Balance and Daily tabs as on today, on every device. Build 22 made the amount and opening-balance fields show proper Indian comma grouping once you leave the field, matching how figures already look everywhere else in the app, and fixed the fields that parse them so a comma no longer risks silently saving as zero. Build 21 fixed a stale on-screen date if the app was left open across midnight, a service worker that re-fetched index.html over the network on every single cached file instead of once, and a background cache refresh that could be silently cut short before it finished saving. Build 20 fixed several multi-device sync bugs: an edit made while a save was in flight could be lost, a device with stale settings could silently overwrite a newer PIN, lock, or app-timing change from another device, and Restore/Reset did not properly bring the cloud copy in line. Earlier builds: cloud sync (9), auto sign-out on exit (10), phone-friendly register layout (11), undo on delete (12), cloud sync baked into every install (14), a mobile card-view text fix (15), no more flash of stale sample figures on a brand-new device (16), archiving/edit history/financial-year locking (17), the browser no longer offers to save the PIN as a password (18), a view-only Viewer role (19).';
   var parts=Object.keys(TYPES).map(function(t){
     return state.entries.filter(function(e){return e.type===t}).length+' '+TYPES[t].label.toLowerCase()});
   $('#dataNote').textContent=state.parties.length+' suppliers, '+state.entries.length+
@@ -1829,7 +1878,7 @@ function buildXlsx(sheets){
 }
 
 function exportXlsx(){
-  if(role!=='admin') return;
+  if(role==='entry') return;   // only the Data tab reaches here, and entry can never open it anyway
   var f=ui.fy, on=ui.ason, rows=allRows(on,f);
 
   var bal=[['Party','Opening','Purchase','Credit note','Payment','Debit note','You owe','Oldest unpaid (days)','Oldest unpaid bill']];
@@ -2021,6 +2070,12 @@ function bind(){
   ['balance','ledger','register','daily','parties','data'].forEach(function(t){
     $('#t-'+t).addEventListener('click',function(){goTab(t)})});
 
+  document.addEventListener('click',function(e){
+    if(!e.target.closest('[data-goto-parties]')) return;
+    goTab('parties');
+    var nm=$('#newName'); if(nm&&nm.focus) nm.focus();
+  });
+
   $('#fy').addEventListener('change',function(e){setYear(e.target.value,null);
     msg('#carryMsg',''); renderAll()});
   $('#ason').addEventListener('change',function(e){ if(!e.target.value)return;
@@ -2028,8 +2083,8 @@ function bind(){
   $('#asonEnd').addEventListener('click',function(){
     ui.ason=fyEnd(ui.fy); $('#ason').value=ui.ason; renderBalance()});
   $('#asonToday').addEventListener('click',function(){
-    var t=clamp(today,fyStart(ui.fy),fyEnd(ui.fy));
-    if(t!==today) toast('Today is outside FY '+ui.fy+'. Showing '+dmy(t)+'.','err');
+    var t=clamp(today(),fyStart(ui.fy),fyEnd(ui.fy));
+    if(t!==today()) toast('Today is outside FY '+ui.fy+'. Showing '+dmy(t)+'.','err');
     ui.ason=t; $('#ason').value=t; renderBalance()});
   $('#dayDate').addEventListener('change',function(e){ if(!e.target.value)return;
     ui.day=clamp(e.target.value,fyStart(ui.fy),fyEnd(ui.fy)); e.target.value=ui.day; renderDaily()});
@@ -2188,12 +2243,20 @@ function bind(){
     queueSave(); renderLedger();
     toastUndo(TYPES[x.type].label+' of '+num(x.amount)+' for '+(xp?xp.name:'?')+' deleted.',
       function(){
+        if(!role||readOnly()||dateLocked(x.date)) return;   // re-check: role and lock state may have changed since the delete
         if(hadTomb===undefined){ delete state.tomb[tk] } else { state.tomb[tk]=hadTomb }
         state.entries.splice(Math.min(at,state.entries.length),0,touchE(x));
-        queueSave(); renderLedger();
+        queueSave(); cloudPush(); renderLedger();
       });
   });
 
+  ['#txAmt','#newOp'].forEach(function(sel){
+    $(sel).addEventListener('blur',function(e){
+      if(e.target.value==='') return;
+      var r=parseAmount(e.target.value);
+      if(r.ok) e.target.value = r.v ? num(r.v) : '';
+    });
+  });
   $('#txAdd').addEventListener('click',function(){
     if(readOnly()) return;
     var p=partyById(ui.ledParty);
@@ -2206,7 +2269,7 @@ function bind(){
     if(!r.v){msg('#txMsg','Enter an amount greater than zero.','err');return}
     if(dateLocked(d)){ msg('#txMsg','FY '+fyOf(d)+' is locked. Ask the owner to unlock it first.','err'); return }
     var t=$('#txType').value;
-    if(d>today && !confirm('That date is in the future. Add it anyway?')) return;
+    if(d>today() && !confirm('That date is in the future. Add it anyway?')) return;
     var dup=state.entries.filter(function(e){
       return e.partyId===p.id&&e.date===d&&e.type===t&&Math.abs(e.amount-r.v)<EPS});
     if(dup.length && !confirm('An identical '+TYPES[t].label.toLowerCase()+' of '+num(r.v)+
@@ -2223,8 +2286,9 @@ function bind(){
     if(readOnly()) return;
     var i=e.target.closest('input[data-op]'); if(!i)return;
     var p=partyById(Number(i.dataset.op)); if(!p)return;
-    var n=Number(i.value);
-    if(!isFinite(n)){alert('Opening balance must be a number.'); renderParties(); return}
+    var opR=parseAmount(i.value);
+    if(!opR.ok){alert(opR.msg); renderParties(); return}
+    var n=opR.v;
     if(fyLocked(ui.fy)){ refuseLock(ui.fy); renderParties(); return }
     p.openings=p.openings||{}; p.openings[ui.fy]=Math.round(n*100)/100; touchP(p);
     queueSave(); renderParties();
@@ -2262,7 +2326,8 @@ function bind(){
     if(!name){msg('#addMsg','Enter a name.','err'); $('#newName').focus(); return}
     if(state.parties.some(function(p){return p.name.toLowerCase()===name.toLowerCase()})){
       msg('#addMsg',name+' is already on the list.','err'); return}
-    var n=Number($('#newOp').value)||0;
+    var opR=parseAmount($('#newOp').value);
+    var n=opR.ok?opR.v:0;
     var p={id:newId(),name:name,openings:{}}; p.openings[ui.fy]=Math.round(n*100)/100;
     state.parties.push(touchP(p));
     if(!ui.ledParty) ui.ledParty=p.id;
@@ -2292,23 +2357,23 @@ function bind(){
     state.lockedYears=state.lockedYears||{};
     if(fyLocked(f)){
       if(!confirm('Unlock FY '+f+'?\n\nThis allows purchases, payments and opening balances for that year to be changed again.')) return;
-      delete state.lockedYears[f];
+      delete state.lockedYears[f]; metaDirty.lockedYears=true;
       toast('FY '+f+' unlocked.','ok');
     }else{
       if(!confirm('Lock FY '+f+'?\n\nNo purchases, payments, notes or opening balances can be added or changed for that '+
         'year on this device until you unlock it again.\n\nNote: a different device that has not yet heard about this '+
         'lock could still add an entry to '+f+' before it reconnects and finds out.')) return;
-      state.lockedYears[f]=now();
+      state.lockedYears[f]=now(); metaDirty.lockedYears=true;
       toast('FY '+f+' locked.','ok');
     }
-    queueSave(); renderData(); renderRegister(); renderLedger();
+    queueSave(); cloudPush(); renderData(); renderRegister(); renderLedger();
   });
   $('#xlDown').addEventListener('click',exportXlsx);
   $('#lockWhen').innerHTML=LOCKS.map(function(L){
     return '<option value="'+L[0]+'"'+(L[0]===lockDelay()?' selected':'')+'>'+L[1]+'</option>'}).join('');
   $('#lockWhen').addEventListener('change',function(e){
-    state.lockDelay=Number(e.target.value);
-    queueSave();
+    state.lockDelay=Number(e.target.value); metaDirty.lockDelay=true;
+    queueSave(); cloudPush();
     toast('Saved. '+(state.lockDelay===0?'The app now locks as soon as you leave it.'
       :state.lockDelay<0?'The app now stays open until you close it.'
       :'The app now locks after '+(state.lockDelay/1000)+' seconds away.'),'ok');
@@ -2321,17 +2386,18 @@ function bind(){
     var others=['admin','entry','viewer'].filter(function(x){return x!==who});
     var clash=others.some(function(x){return pinHash(a)===pins()[x]});
     if(clash){msg('#pinMsg','That PIN is already used by another role. Pick a different one.','err');return}
-    pins()[who]=pinHash(a);
+    pins()[who]=pinHash(a); metaDirty.pins=true;
     $('#pinNew').value=''; $('#pinNew2').value='';
     msg('#pinMsg',ROLES[who].label+' PIN updated.','ok');
-    queueSave();
+    queueSave(); cloudPush();
   });
   $('#expYear').addEventListener('click',function(){exportCsv(false)});
   $('#expAll').addEventListener('click',function(){exportCsv(true)});
   $('#bkDown').addEventListener('click',function(){
     download(JSON.stringify({app:'creditors',version:3,saved:new Date().toISOString(),
-      parties:state.parties,entries:state.entries,pins:state.pins},null,1),
-      'application/json','creditors-backup-'+today+'.json');
+      parties:state.parties,entries:state.entries,tomb:state.tomb,pins:state.pins,
+      lockDelay:state.lockDelay,lockedYears:state.lockedYears},null,1),
+      'application/json','creditors-backup-'+today()+'.json');
     msg('#bkMsg','Backup downloaded. Keep it somewhere safe.','ok');
   });
   $('#bkUpBtn').addEventListener('click',function(){ if(!readOnly()) $('#bkUp').click() });
@@ -2344,6 +2410,7 @@ function bind(){
       if(!d){msg('#bkMsg','That file could not be read as a backup.','err'); return}
       if(!confirm('Replace everything currently in the app with this backup?\n\n'+
         d.parties.length+' suppliers, '+d.entries.length+' entries.')) return;
+      var oldP=state.parties, oldE=state.entries;
       state=d; state.pristine=false;
       reindex();
       buildFyList();
@@ -2353,7 +2420,7 @@ function bind(){
       ui.ledParty=state.parties.length?state.parties[0].id:null;
       setYear(ui.fy,null);
       msg('#bkMsg','Restored '+d.parties.length+' suppliers and '+d.entries.length+' entries.','ok');
-      queueSave(); renderAll();
+      queueSave(); cloudReplaceAll(oldP,oldE); renderAll();
     };
     rd.readAsText(f); e.target.value='';
   });
@@ -2364,13 +2431,14 @@ function bind(){
     download(JSON.stringify({app:'creditors',version:3,saved:new Date().toISOString(),
       note:'automatic backup taken just before a reset',
       parties:state.parties,entries:state.entries,tomb:state.tomb,
-      pins:state.pins,lockDelay:state.lockDelay},null,1),
-      'application/json','creditors-before-reset-'+today+'.json');
+      pins:state.pins,lockDelay:state.lockDelay,lockedYears:state.lockedYears},null,1),
+      'application/json','creditors-before-reset-'+today()+'.json');
+    var oldP=state.parties, oldE=state.entries;
     seedState(); buildFyList();
     $('#fy').innerHTML=FY_LIST.map(function(x){return '<option>'+x+'</option>'}).join('');
     ui.fy='2026-27'; $('#fy').value=ui.fy;
     ui.ledParty=state.parties[0].id;
-    setYear(ui.fy,null); queueSave(); renderAll();
+    setYear(ui.fy,null); queueSave(); cloudReplaceAll(oldP,oldE); renderAll();
     msg('#resetMsg','Original data restored. A backup of what was here was downloaded first.','ok');
   });
 }

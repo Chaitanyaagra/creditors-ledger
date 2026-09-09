@@ -125,6 +125,16 @@ WHAT THIS PROTECTS YOU FROM, AND WHAT IT DOES NOT
   For a real lock, switch Authentication to Email/Password with one account
   per person - then Firebase, not the browser, decides who gets in.
 
+  A middle option exists: keep anonymous sign-in, but restrict the database
+  rules to only the specific device UIDs you approve, instead of any
+  anonymous connection at all - e.g. ".write": "auth.uid === 'abc123...'"
+  for each device, found under Authentication > Users in the Firebase
+  console after that device has signed in once. This is real hardening, but
+  it is not something this app can set up for you: it means going into the
+  Firebase console by hand every time you add a device, which is the exact
+  per-device setup this app was built to avoid. Worth doing only if that
+  trade-off suits you.
+
 
 SAVING AND SYNC STATUS
 -----------------------
@@ -278,12 +288,114 @@ tab, together with a short history of what changed in each build. If a
 feature described here is missing from your screen, you are on an older
 copy - replace index.html and reload.
 
-This bundle is build 19: cloud sync (9), auto sign-out on exit (10), the
+This bundle is build 24: cloud sync (9), auto sign-out on exit (10), the
 phone-friendly register layout (11), undo on delete (12), cloud sync baked
 into every install (14), a mobile card-view text fix (15), no more flash of
 stale sample figures on a brand-new device (16), archiving, edit history and
 financial-year locking (17), the browser no longer offers to save the PIN as
-a password (18), and a view-only Viewer role (19).
+a password (18), a view-only Viewer role (19), several multi-device sync
+correctness fixes (20), offline-shell reliability fixes (21), proper
+comma-formatted amount fields (22), an always-today default date (23), and
+design/accessibility fixes described below (24).
+
+
+DESIGN FIXES IN BUILD 24
+-----------------------------
+  - Two colour pairs fell short of accessibility contrast guidelines: white
+    text on the gold buttons (Add entry, Download Excel, and others), and
+    the muted grey used for zero-value figures in tables. Both are now
+    comfortably legible while keeping the same look and feel.
+  - Every "no suppliers yet" screen - Balance, the Party ledger, Register,
+    Daily - now gives the owner a direct "Go to Parties" button instead of
+    only a text hint, and takes you straight to the name field to start
+    typing. This only appears for the owner, since data entry and viewer
+    sign-ins cannot add a supplier anyway.
+
+
+DEFAULT DATE IN BUILD 23
+-----------------------------
+Opening the app used to show Balance and Daily as on the date of that
+device's last saved entry, not today. Most of the time these were close
+enough not to notice, but any gap between them - a device that had not been
+used in a few days, or one that had synced slightly behind another - showed
+up as different figures on different devices, which looked like the data
+itself disagreed when it was really just the date being looked at that
+disagreed. Every device now opens showing today, every time, and only shows
+an older date if you deliberately pick one. Which financial year opens by
+default is unaffected - that still sensibly follows where your data lives -
+only the specific date does not.
+
+
+AMOUNT FIELDS IN BUILD 22
+-----------------------------
+The transaction amount field, the new-supplier opening balance field, and
+each supplier's opening-balance box on the Parties tab now show the number
+with proper Indian comma grouping - 1,50,000 rather than 150000 - once you
+leave the field, matching how every figure already looks on the Balance and
+Ledger screens. Typing is unaffected; the formatting is only applied when
+you move on to something else.
+
+This needed a matching fix underneath: those same fields used to be parsed
+with a plain number conversion that breaks on a comma, which would have
+silently saved a comma-formatted opening balance as zero. They now go
+through the same parser as every other amount in the app, so a value you
+can see is always the value that gets saved.
+
+
+OFFLINE SHELL FIXES IN BUILD 21
+-----------------------------------
+  - "Today" is now worked out fresh every time it is needed, not fixed once
+    when the app is opened. Left running across midnight, the app now
+    correctly recognises the new day instead of still thinking it is
+    yesterday, which affected the future-date warning among other things.
+  - The service worker used to re-fetch the whole app over the network to
+    work out its own cache name on every single file it cached, all
+    session long. It now works that out once and reuses it, which also
+    removes the small risk of a flaky connection leaving different files
+    in inconsistent caches.
+  - The offline shell (index.html) now answers instantly from the cached
+    copy while quietly checking for a newer one in the background, rather
+    than waiting on the network first. This matters most on a slow or
+    patchy connection - the app opens immediately instead of hanging.
+    Because your actual figures live in local storage and in Firebase, not
+    in this cached shell, this never risks showing an old number - only,
+    briefly, one session behind on the code itself, which the background
+    check then catches up.
+  - That background refresh is now guaranteed to finish saving before the
+    browser is allowed to end the service worker, so a slow moment can no
+    longer leave it half-done.
+
+
+MULTI-DEVICE SYNC FIXES IN BUILD 20
+--------------------------------------
+A careful review of the cloud sync code turned up real bugs, all fixed here:
+
+  - An edit made in the moment between one save going out and the previous
+    one finishing could be silently dropped instead of queued for next time.
+  - A device that was offline when a PIN, an app-lock timing choice, or a
+    financial-year lock was changed elsewhere could overwrite that change
+    with its own stale copy the next time it synced anything at all, even
+    something unrelated like an ordinary purchase entry. Settings now only
+    go up when the device that is pushing actually changed them itself.
+  - Restore and Reset updated the screen correctly but did not properly
+    bring the shared cloud ledger in line - old records could resurface
+    later from another device. Both now tombstone what was removed and
+    push the full replacement.
+  - Changing only the Viewer PIN did not reach other signed-in devices.
+  - The app-lock timing setting was sent to the cloud but never read back
+    on another device, so it did not actually travel with the ledger as
+    documented.
+  - The full backup (.json) was missing financial-year locks, the app-lock
+    timing setting, and deletion history, despite the app describing it as
+    complete.
+  - The Excel button was visible to the Viewer role but silently did
+    nothing when clicked. It now works for Viewer as well as Owner.
+  - Undo, after deleting an entry, could in principle act after signing out
+    or after that year had since been locked. Signing out now clears any
+    waiting Undo, and Undo itself re-checks both before acting.
+  - Entry timestamps now correct themselves against Firebase's own clock,
+    so a device with a slightly wrong system clock no longer risks having
+    its genuinely later edits treated as older than someone else's.
 
 
 UPDATING LATER

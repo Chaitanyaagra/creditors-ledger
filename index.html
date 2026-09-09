@@ -263,7 +263,7 @@
     .cards table{min-width:0;width:100%}
     .cards caption{padding:12px 2px 10px;border:0;background:transparent}
     .cards thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
-    .cards table,.cards tbody,.cards tr,.cards td,.cards th{display:block;width:auto}
+    .cards table,.cards tbody,.cards tr,.cards td,.cards th,.cards caption{display:block;width:auto}
     .cards tbody tr{background:var(--card)!important;border:1px solid var(--rule);
       border-radius:5px;margin:0 0 10px;padding:11px 13px}
     .cards tbody tr.sum{border:1px solid var(--deep)}
@@ -300,32 +300,8 @@
   .mast .status.saved{color:var(--stat-ok)}
   .mast .status.failed{color:var(--stat-bad)}
 
-  /* ---- dark mode: same layout, inverted surfaces ---- */
-  @media (prefers-color-scheme: dark){
-    :root{
-      --deep:#0A2028; --deep-2:#10333C;
-      --surface:#101A1E; --card:#17252B;
-      --rule:#25383F; --rule-2:#4A6069;
-      --ink:#E4EDEF; --soft:#93A8AF;
-      --due:#F08A80; --due-bg:#3A1F1C;
-      --adv:#6FCFA8; --adv-bg:#12332A;
-      --gold:#E5AE55; --gold-2:#D0973A;
-      --b1:#3E9E7C; --b2:#DFA13C; --b3:#D2702A; --b4:#C4483D;
-      --zebra:#142126; --head:#1B2C33; --head2:#1B2C33;
-      --tint-add:#231F17; --tint-cut:#17262B;
-      --tint-add2:#282318; --tint-cut2:#1B2C31;
-      --focus-bg:#3A2E14; --multi-bg:#33280F; --multi-fg:#E8B860;
-      --flag-bg:#2C2411; --flag-fg:#E6C67C;
-      --tag3-bg:#33200F; --tag3-fg:#E09355;
-      --bar-bg:#22343A; --field:#1B2A30;
-      --on-deep:#DCE9EB; --on-deep-soft:#8FA6AC; --on-deep-tab:#9DB4BA;
-    }
-    .btn.ghost{color:var(--ink)}
-    .btn.ghost:hover{background:rgba(255,255,255,.06)}
-    .grid input:focus{outline-color:var(--gold)}
-    .gate .box{box-shadow:0 18px 44px rgba(0,0,0,.55)}
-    .card,.scroll,.aging,.form,.addrow{box-shadow:none}
-  }
+  .role-viewer .edit-only{display:none!important}
+  .role-viewer input,.role-viewer select{cursor:default}
 
   /* sign in */
   .gate{position:fixed;inset:0;z-index:50;display:flex;align-items:center;justify-content:center;
@@ -337,6 +313,7 @@
   .gate label{display:block;font-size:11.5px;color:var(--soft);margin-bottom:5px}
   .gate input{width:100%;font-size:19px;padding:10px 12px;letter-spacing:.32em;text-align:center;
     border:1px solid var(--rule-2);border-radius:3px;background:var(--field);font-family:var(--sans)}
+  .gate input.pinfield{-webkit-text-security:disc;text-security:disc}
   .gate .btn{width:100%;margin-top:14px;padding:11px;font-size:15px}
   .gate .m{font-size:13px;margin:12px 0 0;min-height:1.2em;text-align:center;color:var(--due)}
   .gate .hint{font-size:12.5px;color:var(--soft);margin:16px 0 0;padding-top:14px;
@@ -356,12 +333,14 @@
     <p class="lead">Enter your PIN to continue.</p>
     <div id="pinWrap">
       <label for="pin">PIN</label>
-      <input type="password" id="pin" inputmode="numeric" autocomplete="off" maxlength="12">
+      <input type="text" id="pin" inputmode="numeric" pattern="[0-9]*"
+        autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"
+        data-lpignore="true" data-1p-ignore data-bwignore="true" data-form-type="other"
+        class="pinfield" maxlength="12">
     </div>
 
     <button class="btn" id="signIn">Sign in</button>
     <p class="m" id="gateMsg"></p>
-    <p class="hint" id="gateHint" hidden></p>
   </div>
 </div>
 
@@ -429,7 +408,7 @@
   <div class="ctl">
     <div class="fld"><label for="ledParty">Party</label><select id="ledParty"></select></div>
   </div>
-  <div class="form">
+  <div class="form edit-only">
     <div class="fld"><label for="txDate">Date</label><input type="date" id="txDate"></div>
     <div class="fld"><label for="txType">Type</label><select id="txType">
       <option value="purchase">Purchase</option><option value="credit">Credit note</option>
@@ -467,6 +446,7 @@
       <button data-type="credit" aria-pressed="false">Credit note</button>
     </div>
   </div>
+  <div id="regLock"></div>
   <div class="scroll" id="regMonthWrap"><table class="grid" id="regGrid"></table></div>
     <div id="regDayList"></div>
   <p class="note">
@@ -490,8 +470,8 @@
 
 <!-- PARTIES -->
 <section class="pane" id="p-parties" role="tabpanel" hidden>
-  <h2 class="sec">Add a supplier</h2>
-  <div class="form">
+  <h2 class="sec edit-only">Add a supplier</h2>
+  <div class="form edit-only">
     <div class="fld"><label for="newName">Name</label><input type="text" id="newName" maxlength="60" placeholder="e.g. RBRR"></div>
     <div class="fld"><label for="newOp">Opening balance <span id="opFy"></span></label>
       <input type="number" id="newOp" step="0.01" placeholder="0"></div>
@@ -502,14 +482,19 @@
   <div class="cards"><div class="card wide"><table>
     <caption id="partiesCap">Suppliers</caption>
     <thead><tr><th>Party</th><th id="opHead">Opening</th><th>Closing</th>
-      <th>Entries this year</th><th>Oldest unpaid</th><th></th></tr></thead>
+      <th>Entries this year</th><th>Oldest unpaid</th><th>Action</th></tr></thead>
     <tbody id="partiesBody"></tbody>
   </table></div></div>
   <p class="note">
     The opening balance belongs to the selected year only. It is treated as dated 1 April, so if it
     carries older bills their real age is understated.
   </p>
-  <div class="actions"><button class="btn ghost" id="carry">Carry closing balances into next year</button></div>
+  <p class="note">
+    <b>Archive</b> takes a supplier off the Register and Daily-entry screens once you have stopped
+    buying from them, without touching their ledger, balance or history anywhere else. It can be
+    undone at any time. Only a supplier with no transactions in any year can be removed permanently.
+  </p>
+  <div class="actions edit-only"><button class="btn ghost" id="carry">Carry closing balances into next year</button></div>
   <p class="msg" id="carryMsg"></p>
 </section>
 
@@ -517,7 +502,7 @@
 <section class="pane" id="p-data" role="tabpanel" hidden>
   <h2 class="sec">Year summary</h2>
   <div class="cards"><div class="card wide"><table>
-    <thead><tr><th>Financial year</th><th>Purchase</th><th>Payment</th><th>Entries</th><th>Closing</th></tr></thead>
+    <thead><tr><th>Financial year</th><th>Purchase</th><th>Payment</th><th>Entries</th><th>Closing</th><th>Locked</th></tr></thead>
     <tbody id="yearsBody"></tbody>
   </table></div></div>
 
@@ -529,13 +514,14 @@
   <div class="actions">
     <button class="btn gold" id="xlDown">Download Excel (.xlsx)</button>
     <button class="btn ghost" id="bkDown">Backup (.json)</button>
-    <button class="btn ghost" id="bkUpBtn">Restore from backup</button>
+    <button class="btn ghost edit-only" id="bkUpBtn">Restore from backup</button>
     <input type="file" id="bkUp" accept=".json,application/json" hidden>
     <button class="btn ghost" id="expYear">This year to CSV</button>
     <button class="btn ghost" id="expAll">All years to CSV</button>
   </div>
   <p class="msg" id="bkMsg"></p>
 
+  <div class="edit-only">
   <h2 class="sec">Cloud sync</h2>
   <p class="note">
     Off by default. Fill this in and the ledger syncs across every device that
@@ -566,13 +552,16 @@
     <span class="status" id="cloudState"><span class="dot"></span><span id="cloudTxt">Not set up</span></span>
   </div>
   <p class="msg" id="cfgMsg"></p>
+  </div>
 
+  <div class="edit-only">
   <h2 class="sec">Users</h2>
   <p class="note">
-    Two PINs. The <b>owner</b> PIN opens everything, including Excel download and this page.
+    Three PINs. The <b>owner</b> PIN opens everything, including Excel download and this page.
     The <b>entry</b> PIN opens only the register, and only for purchases, credit notes and debit
-    notes &mdash; payments stay with you. Change both from their defaults before handing the file
-    to anyone.
+    notes &mdash; payments stay with you. The <b>viewer</b> PIN opens every screen for looking at
+    and exporting figures, but cannot add, edit, delete, archive, lock or change anything at all.
+    Change all three from their defaults before handing the file to anyone.
   </p>
   <p class="note" style="max-width:76ch">
     Be clear on what this is: the PIN keeps the wrong person out of the wrong screen, the way a
@@ -587,7 +576,8 @@
   </div>
   <div class="form">
     <div class="fld"><label for="pinWho">PIN to change</label><select id="pinWho">
-      <option value="admin">Owner</option><option value="entry">Data entry</option></select></div>
+      <option value="admin">Owner</option><option value="entry">Data entry</option>
+      <option value="viewer">Viewer</option></select></div>
     <div class="fld"><label for="pinNew">New PIN (4&ndash;12 digits)</label>
       <input type="text" id="pinNew" inputmode="numeric" maxlength="12" placeholder="\u2022\u2022\u2022\u2022"></div>
     <div class="fld"><label for="pinNew2">Repeat</label>
@@ -595,13 +585,27 @@
     <button class="btn" id="pinSave">Update PIN</button>
   </div>
   <p class="msg" id="pinMsg"></p>
+  </div>
+
+  <h2 class="sec">Financial year locking</h2>
+  <p class="note">
+    Lock a year once it is finalised, and no purchase, payment, note or opening balance for that
+    year can be added or changed from this device until it is unlocked again. Lock a year from the
+    Year summary table above.
+  </p>
+  <p class="note">
+    This is enforced by each device once it knows about the lock, not by the cloud database itself.
+    A device that is offline when you lock a year could still add an entry to it before reconnecting
+    and learning about the lock. Treat it as a safeguard against accidental changes during normal
+    day-to-day use, not as a tamper-proof seal.
+  </p>
 
   <h2 class="sec">This copy of the app</h2>
   <p class="note" id="buildNote"></p>
 
   <h2 class="sec">Storage</h2>
   <p class="note" id="dataNote"></p>
-  <div class="actions"><button class="btn warn" id="resetAll">Reset to the original spreadsheet data</button></div>
+  <div class="actions edit-only"><button class="btn warn" id="resetAll">Reset to the original spreadsheet data</button></div>
   <p class="msg" id="resetMsg"></p>
 </section>
 </div>
@@ -609,7 +613,7 @@
 <script>
 (function(){
 'use strict';
-var BUILD='12 \u00b7 2026-09-08';
+var BUILD='19 \u00b7 2026-09-08';
 var KEY='creditors:v3', OLDKEYS=['party-register:v2','payment-register:v1'];
 var SEED={"purchase":[["2026-04-01","RBRR",312894.0],["2026-04-01","VCPL",65518.0],["2026-04-01","RBI",264243.0],["2026-04-07","RBRR",185192.0],["2026-04-08","RBI",173241.0],["2026-04-09","RBRR",72875.0],["2026-04-10","RBI",46021.0],["2026-04-11","RBRR",122746.0],["2026-04-14","RBI",266244.0],["2026-04-15","RBRR",3250.0],["2026-04-16","RBI",179406.0],["2026-04-21","RBI",267801.0],["2026-04-22","RBI",83198.0],["2026-04-23","RBI",207362.0],["2026-04-25","VCPL",133217.0],["2026-04-27","RBD",7179.0],["2026-04-27","VCPL",86307.0],["2026-04-28","RBRR",106988.0],["2026-04-28","RBI",119121.0],["2026-04-29","R N FOODs",4500.0],["2026-04-30","RBI",83194.0],["2026-05-01","RBRR",52801.0],["2026-05-01","RBI",156000.0],["2026-05-02","RBRR",62761.0],["2026-05-04","RBI",96002.0],["2026-05-05","RBRR",29697.0],["2026-05-05","RBI",155423.0],["2026-05-06","RBI",106306.0],["2026-05-07","RBI",73000.0],["2026-05-08","RBI",166531.0],["2026-05-09","RBI",141955.0],["2026-05-14","RBRR",450490.0],["2026-05-14","VCPL",110350.0],["2026-05-14","RBI",178119.0],["2026-05-18","RBI",266285.0],["2026-05-19","RBRR",35302.0],["2026-05-20","RBRR",4250.0],["2026-05-20","RBI",96002.0],["2026-05-21","RBI",169002.0],["2026-05-22","RBI",183601.0],["2026-05-27","RBI",83202.0],["2026-05-28","VCPL",3776.0],["2026-05-29","RBI",274600.0],["2026-06-01","VCPL",15340.0],["2026-06-02","RBI",317070.0],["2026-06-03","RBI",99842.0],["2026-06-04","RBRR",203972.0],["2026-06-05","RBI",166396.0],["2026-06-09","RBI",271098.0],["2026-06-10","RBRR",154242.0],["2026-06-10","R N FOODs",53076.0],["2026-06-10","RBI",141866.0],["2026-06-11","RBI",60251.0],["2026-06-13","VCPL",9000.0],["2026-06-15","RBRR",44352.0],["2026-06-15","R N FOODs",4600.0],["2026-06-15","RBI",275206.0],["2026-06-17","RBI",185902.0],["2026-06-18","RBRR",94355.0],["2026-06-18","VCPL",27140.0],["2026-06-18","R N FOODs",121968.0],["2026-06-19","RBRR",49439.0],["2026-06-20","RBI",181858.0],["2026-06-22","RBI",420380.0],["2026-06-23","RBRR",14400.0],["2026-06-24","RBRR",275200.0],["2026-06-24","RBI",148002.0],["2026-06-25","RBRR",56200.0],["2026-06-27","RBI",73000.0],["2026-06-30","R N FOODs",66890.0],["2026-07-01","RBD",1540.0],["2026-07-01","RBI",276008.0],["2026-07-02","RBRR",268106.0],["2026-07-02","RBI",227344.0],["2026-07-03","RBI",73000.0],["2026-07-04","RBRR",30000.0],["2026-07-04","RBI",140159.0],["2026-07-07","RBI",201121.0],["2026-07-10","RBRR",257955.0],["2026-07-11","RBRR",143957.0],["2026-07-11","R N FOODs",22176.0],["2026-07-13","R N FOODs",26000.0],["2026-07-13","RBI",154402.0],["2026-07-15","RBI",95800.0],["2026-07-17","RBRR",250.0],["2026-07-18","RBRR",84343.0],["2026-07-18","VCPL",30680.0],["2026-07-20","RBD",3590.0],["2026-07-20","R N FOODs",33264.0],["2026-07-22","RBRR",126000.0],["2026-07-22","RBD",3850.0],["2026-07-23","VCPL",30680.0],["2026-07-24","RBRR",147530.0],["2026-07-25","RBI",213904.0],["2026-07-27","R N FOODs",29460.0],["2026-07-28","RBI",42286.0],["2026-07-29","RBRR",111856.0],["2026-07-31","RBRR",42963.0],["2026-07-31","RBI",463399.0],["2026-08-01","RBI",180403.0],["2026-08-04","RBRR",420962.0],["2026-08-04","R N FOODs",24000.0],["2026-08-05","RBRR",37251.0],["2026-08-05","RBI",107202.0],["2026-08-07","RBI",99900.0],["2026-08-10","RBI",108593.0],["2026-08-11","RBRR",199969.0],["2026-08-11","R N FOODs",125620.0],["2026-08-11","RBI",168000.0],["2026-08-14","RBRR",6000.0],["2026-08-14","RBI",92800.0],["2026-08-17","RBRR",9819.0],["2026-08-17","R N FOODs",6300.0],["2026-08-17","RBI",10144.0],["2026-08-18","RBRR",9450.0],["2026-08-18","RBI",140589.0],["2026-08-19","RBI",37559.0],["2026-08-20","RBRR",71879.0],["2026-08-20","RBD",190116.0],["2026-08-20","R N FOODs",50504.0],["2026-08-20","RBI",77720.0],["2026-08-22","RBRR",51989.83],["2026-08-22","RBI",207000.0]],"payment":[["2026-04-04","RBRR",150000.0],["2026-04-04","RBI",150000.0],["2026-04-06","RBRR",400000.0],["2026-04-06","RBD",150000.0],["2026-04-06","VCPL",150000.0],["2026-04-06","RBI",150000.0],["2026-04-08","RBRR",300000.0],["2026-04-09","RBI",350000.0],["2026-04-13","RBD",100000.0],["2026-04-15","RBD",150000.0],["2026-04-15","RBI",100000.0],["2026-04-16","RBRR",100000.0],["2026-04-18","RBI",100000.0],["2026-04-21","VCPL",100000.0],["2026-04-21","RBI",150000.0],["2026-04-23","RBRR",100000.0],["2026-04-23","RBD",38412.0],["2026-04-23","VCPL",1771.0],["2026-04-23","RBI",300000.0],["2026-04-27","RBI",100000.0],["2026-04-28","RBRR",100000.0],["2026-04-29","RBI",150000.0],["2026-05-01","RBI",100000.0],["2026-05-06","VCPL",150000.0],["2026-05-07","RBRR",200000.0],["2026-05-08","RBI",100000.0],["2026-05-09","RBRR",100000.0],["2026-05-12","RBD",3030.0],["2026-05-13","RBRR",100000.0],["2026-05-13","VCPL",100000.0],["2026-05-13","RBI",124958.0],["2026-05-15","RBRR",200000.0],["2026-05-15","RBI",200000.0],["2026-05-16","RBI",150000.0],["2026-05-19","RBRR",150000.0],["2026-05-20","RBI",350000.0],["2026-05-22","VCPL",100000.0],["2026-05-22","RBI",100000.0],["2026-05-23","RBI",100000.0],["2026-05-26","RBI",100000.0],["2026-05-27","RBI",150000.0],["2026-05-29","RBRR",150000.0],["2026-05-29","VCPL",100000.0],["2026-05-29","RBI",200000.0],["2026-05-30","RBI",200000.0],["2026-06-01","RBI",100000.0],["2026-06-02","RBRR",100000.0],["2026-06-03","RBI",100000.0],["2026-06-05","RBI",100000.0],["2026-06-09","RBI",100000.0],["2026-06-10","RBI",200000.0],["2026-06-11","RBI",200000.0],["2026-06-12","RBI",150000.0],["2026-06-17","RBRR",450000.0],["2026-06-17","VCPL",100000.0],["2026-06-19","RBI",300000.0],["2026-06-20","RBI",100000.0],["2026-06-22","RBRR",50000.0],["2026-06-22","RBD",11221.48],["2026-06-22","R N FOODs",50000.0],["2026-06-22","RBI",250000.0],["2026-06-24","RBI",100000.0],["2026-06-26","RBI",310000.0],["2026-06-29","RBI",100000.0],["2026-06-30","RBI",200000.0],["2026-07-01","RBRR",200000.0],["2026-07-01","RBI",100000.0],["2026-07-02","RBI",100000.0],["2026-07-03","RBI",100000.0],["2026-07-06","RBI",150000.0],["2026-07-07","RBI",100000.0],["2026-07-11","RBI",200000.0],["2026-07-14","RBI",200000.0],["2026-07-15","RBRR",100000.0],["2026-07-17","RBI",100000.0],["2026-07-18","RBRR",100000.0],["2026-07-18","RBI",200000.0],["2026-07-21","RBI",150000.0],["2026-07-24","R N FOODs",100000.0],["2026-07-27","RBI",200000.0],["2026-07-28","RBRR",100000.0],["2026-07-29","RBI",150000.0],["2026-07-30","RBRR",100000.0],["2026-07-31","RBRR",200000.0],["2026-07-31","RBI",200000.0],["2026-08-01","RBI",250000.0],["2026-08-04","RBI",100000.0],["2026-08-10","R N FOODs",3960.0],["2026-08-10","RBI",14478.0],["2026-08-12","RBI",250000.0],["2026-08-13","RBRR",200000.0],["2026-08-13","R N FOODs",100000.0],["2026-08-13","RBI",100000.0],["2026-08-17","RBRR",350000.0],["2026-08-17","RBI",300000.0],["2026-08-18","RBI",100000.0],["2026-08-19","RBI",100000.0],["2026-08-20","RBRR",100000.0],["2026-08-20","RBD",8980.0],["2026-08-20","RBI",100000.0],["2026-08-22","RBRR",100000.0],["2026-08-24","VCPL",50000.0],["2026-08-24","R N FOODs",100000.0],["2026-08-25","RBI",100000.0],["2026-08-26","RBRR",300000.0],["2026-08-26","RBI",150000.0],["2026-08-27","RBI",100000.0],["2026-08-31","RBI",100000.0],["2026-09-01","RBI",100000.0],["2026-09-03","RBRR",100000.0],["2026-09-04","RBRR",100000.0],["2026-09-04","VCPL",50000.0],["2026-09-05","RBRR",250000.0],["2026-09-05","RBI",250000.0],["2026-09-06","RBRR",100000.0],["2026-09-06","RBI",100000.0],["2026-09-07","RBRR",100000.0],["2026-09-08","VCPL",50000.0],["2026-09-08","R N FOODs",40000.0],["2026-09-08","RBI",250000.0]],"credit":[],"debit":[]};
 
@@ -632,9 +636,12 @@ var ROLES={
   admin:{label:'Owner',tabs:['balance','ledger','register','daily','parties','data'],
          types:['payment','debit','purchase','credit']},
   entry:{label:'Data entry',tabs:['register'],
-         types:['purchase','credit','debit']}          // no payments
+         types:['purchase','credit','debit']},          // no payments
+  viewer:{label:'Viewer',tabs:['balance','ledger','register','daily','parties','data'],
+         types:[]}                                      // sees everything, changes nothing
 };
-var DEFAULT_PINS={admin:'1234',entry:'1111'};
+var DEFAULT_PINS={admin:'1234',entry:'1111',viewer:'2580'};
+function readOnly(){ return role==='viewer' }
 /* How long the app may sit hidden before it locks itself. 0 = the moment you
    leave it. -1 = only when the window is actually closed. */
 var LOCKS=[[0,'The moment I leave the app'],[30000,'After 30 seconds away'],
@@ -653,6 +660,7 @@ function pinHash(s){
 }
 function pins(){
   state.pins=state.pins||{admin:pinHash(DEFAULT_PINS.admin),entry:pinHash(DEFAULT_PINS.entry)};
+  if(!state.pins.viewer) state.pins.viewer=pinHash(DEFAULT_PINS.viewer);   // ledgers from before this role existed
   return state.pins;
 }
 function pinsAreDefault(){
@@ -691,6 +699,11 @@ function fyStart(f){return f.slice(0,4)+'-04-01'}
 function fyEnd(f){return (Number(f.slice(0,4))+1)+'-03-31'}
 function fyOf(d){var y=Number(d.slice(0,4)),m=Number(d.slice(5,7)),s=m>=4?y:y-1;
   return s+'-'+String((s+1)%100).padStart(2,'0')}
+function fyLocked(fy){ return !!(state.lockedYears && state.lockedYears[fy]) }
+function dateLocked(d){ return fyLocked(fyOf(d)) }
+function refuseLock(fy){
+  toast('FY '+fy+' is locked. Ask the owner to unlock it on the Data tab before making changes.','err');
+}
 function fyMonths(f){var y=Number(f.slice(0,4)),o=[];
   for(var i=0;i<12;i++){var mm=4+i,yy=mm>12?y+1:y,m2=mm>12?mm-12:mm;
     o.push(yy+'-'+String(m2).padStart(2,'0'))}return o}
@@ -852,15 +865,34 @@ function startHeartbeat(){
    still works with no network. Firebase is a channel on top of it: each entry
    and each party is its own node, merged by whichever copy was edited last.
    Nothing here runs until the owner fills in the config on the Data tab. */
-var corrupt=null, blocked=false;
+var corrupt=null, blocked=false, firstSync=false;
 var cloud={cfg:null,mod:null,db:null,auth:null,user:null,state:'off',unsub:[],pushing:false};
 
+/* Baked into this copy of the app, so every device it is installed on syncs
+   to the same ledger with no per-device setup. Filled in once by the owner;
+   change it here and re-share the file if you ever move to a new project. */
+var DEFAULT_CLOUD={
+  apiKey:'AIzaSyB5R94WC0wNpl4mal0ryxwd1QGkwWyHnP0',
+  databaseURL:'https://creditors-43f30-default-rtdb.firebaseio.com',
+  projectId:'creditors-43f30',
+  authDomain:'creditors-43f30.firebaseapp.com',
+  region:'us-central1', ledger:'main'
+};
+
+/* A device only overrides the baked-in config if it explicitly turned sync
+   off, or explicitly saved different values on the Data tab. Otherwise every
+   fresh install just works. */
 function cfgGet(){
-  try{ return JSON.parse(localStorage.getItem('creditors:cloud')||'null') }catch(e){ return null }
+  var v=null;
+  try{ v=JSON.parse(localStorage.getItem('creditors:cloud')||'null') }catch(e){ v=null }
+  if(v&&v.off) return null;
+  if(v&&v.apiKey) return v;
+  return (DEFAULT_CLOUD&&DEFAULT_CLOUD.apiKey) ? DEFAULT_CLOUD : null;
 }
 function cfgPut(c){
   try{ c?localStorage.setItem('creditors:cloud',JSON.stringify(c))
-        :localStorage.removeItem('creditors:cloud'); return true }
+        :localStorage.setItem('creditors:cloud',JSON.stringify({off:true}));
+      return true }
   catch(e){ return false }
 }
 function cloudSet(st,txt){
@@ -997,6 +1029,12 @@ function cloudListen(){
       state.pins=v; saveLocal();
     }
   }));
+  cloud.unsub.push(m.onValue(r(cloud.db, base()+'/lockedYears'),function(snap){
+    var v=snap.val()||{};
+    if(JSON.stringify(v)!==JSON.stringify(state.lockedYears||{})){
+      state.lockedYears=v; saveLocal(); renderAll();
+    }
+  }));
   var tnode=r(cloud.db, base()+'/tomb');
   cloud.unsub.push(m.onValue(tnode,function(snap){
     var val=snap.val()||{}, touched=false;
@@ -1066,6 +1104,7 @@ function cloudPush(){
   Object.keys(state.tomb||{}).forEach(function(k){ todo[base()+'/tomb/'+k]=state.tomb[k]; any=true });
   if(state.pins){ todo[base()+'/pins']=state.pins; any=true }
   if(state.lockDelay!==undefined){ todo[base()+'/lockDelay']=state.lockDelay; any=true }
+  if(state.lockedYears){ todo[base()+'/lockedYears']=state.lockedYears; any=true }
   if(!any) return Promise.resolve();
   cloud.pushing=true;
   var m=cloud.mod.db;
@@ -1091,7 +1130,7 @@ function cloudOff(){
 /* ---------- seed / load ---------- */
 function seedState(){
   var base=[['RBRR',1118143],['RBD',445484.48],['VCPL',375850],['R N FOODs',0],['RBI',1534134]];
-  state={parties:[],entries:[],tomb:{},pristine:true}; nextId=1;
+  state={parties:[],entries:[],tomb:{},lockedYears:{},pristine:true}; nextId=1;
   var by={};
   base.forEach(function(b){var p={id:newId(),name:b[0],openings:{'2026-27':b[1]}};
     state.parties.push(p); by[b[0]]=p.id});
@@ -1105,7 +1144,7 @@ function maxId(list){var m=0;for(var i=0;i<list.length;i++){var v=list[i].id||0;
 function reindex(){ nextId=1+Math.max(maxId(state.parties),maxId(state.entries)) }
 function normalise(d){
   if(!d||!d.parties||!d.parties.length) return null;
-  d.entries=d.entries||[]; d.tomb=d.tomb||{};
+  d.entries=d.entries||[]; d.tomb=d.tomb||{}; d.lockedYears=d.lockedYears||{};
   if(d.pristine===undefined) d.pristine=false;
   d.parties.forEach(function(p){
     if(!p.openings){p.openings={}; if(p.opening) p.openings['2026-27']=p.opening; delete p.opening}
@@ -1150,6 +1189,12 @@ function boot(){
       reindex();
     }else if(corrupt){
       seedState(); state.pristine=true; blocked=true;   // show samples, overwrite nothing
+    }else if(cfgGet()&&cfgGet().apiKey){
+      // Cloud sync is baked into this copy of the app. A brand-new device
+      // should wait for the real ledger rather than flash the built-in
+      // starting figures and then swap them out a few seconds later.
+      state={parties:[],entries:[],tomb:{},lockedYears:{},pristine:true}; nextId=1;
+      firstSync=true;
     }else{ seedState() }
     buildFyList();
     var dates=state.entries.map(function(e){return e.date}).sort();
@@ -1193,11 +1238,6 @@ function resumeSaving(){
 
 /* ---------- sign in ---------- */
 function bindGate(){
-  if(pinsAreDefault()){
-    var h=$('#gateHint'); h.hidden=false;
-    h.innerHTML='First time here? The owner PIN is <b>1234</b> and the data-entry PIN is <b>1111</b>. '+
-      'Change both from the Data tab once you are in.';
-  }
   $('#signIn').addEventListener('click',trySignIn);
   $('#pin').addEventListener('keydown',function(e){if(e.key==='Enter') trySignIn()});
   $('#pin').focus();
@@ -1208,11 +1248,25 @@ function enter(r){
   $('#gate').hidden=true; $('#gate').style.display='none';
   $('.app').classList.add('on');
   applyRole(); resetIdle();
-  if(cfgGet()&&cfgGet().apiKey) cloudConnect();   // sync starts quietly behind the PIN
+  if(firstSync){
+    setStat('saving','Loading your ledger\u2026');
+    $('#lagFlag') && ($('#lagFlag').innerHTML=
+      '<p class="flag">Loading your ledger for the first time on this device\u2026 this takes a few seconds.</p>');
+  }
+  if(cfgGet()&&cfgGet().apiKey){
+    cloudConnect().then(function(ok){
+      if(!firstSync) return;
+      firstSync=false;
+      if(!ok && !state.parties.length){
+        toast('No internet yet and nothing on this device. Connect once online to load your ledger.','err');
+      }
+      renderAll();
+    });
+  }
 }
 function trySignIn(){
   var v=$('#pin').value.trim(), h=pinHash(v), pp=pins();
-  var rr = h===pp.admin?'admin' : (h===pp.entry?'entry':null);
+  var rr = h===pp.admin?'admin' : (h===pp.entry?'entry':(h===pp.viewer?'viewer':null));
   if(!rr){ $('#gateMsg').textContent='That PIN did not match.'; $('#pin').value=''; $('#pin').focus(); return }
   enter(rr);
 }
@@ -1236,6 +1290,7 @@ function resetIdle(){
 }
 function signOut(){
   clearTimeout(idleTimer); clearTimeout(hideTimer); hideTimer=null;
+  cloudOff();          // stop cloud listeners so nothing keeps writing to state after sign-out
   role=null;
   $('.app').classList.remove('on');
   $('#gate').hidden=false; $('#gate').style.display='flex';
@@ -1243,16 +1298,20 @@ function signOut(){
 }
 function applyRole(){
   var R=ROLES[role];
+  document.body.classList.toggle('role-viewer', role==='viewer');
   ['balance','ledger','register','daily','parties','data'].forEach(function(t){
     var vis=R.tabs.indexOf(t)>=0;
     $('#t-'+t).hidden=!vis;
     if(!vis) $('#p-'+t).hidden=true;
   });
-  if(R.types.indexOf(ui.regType)<0) ui.regType=R.types[0];
+  // A viewer can look at any register type, just cannot write to any of them,
+  // so the type toggle stays fully visible for them unlike the entry role.
+  var visibleTypes = readOnly() ? Object.keys(TYPES) : R.types;
+  if(R.types.length && R.types.indexOf(ui.regType)<0) ui.regType=R.types[0];
   Array.prototype.forEach.call($('#regView').querySelectorAll('button'),function(b){
     b.setAttribute('aria-pressed',String(b.dataset.view===ui.regView))});
   Array.prototype.forEach.call($('#regSeg').querySelectorAll('button'),function(b){
-    b.hidden = R.types.indexOf(b.dataset.type)<0;
+    b.hidden = visibleTypes.indexOf(b.dataset.type)<0;
     b.setAttribute('aria-pressed',String(b.dataset.type===ui.regType));
   });
 
@@ -1261,6 +1320,8 @@ function applyRole(){
   $('#signOut').addEventListener('click',signOut);
   $('#sub').textContent = role==='entry'
     ? 'Enter purchases and notes by date \u2014 payments are handled by the owner'
+    : role==='viewer'
+    ? 'View only \u2014 nothing can be added, changed or removed from this sign-in'
     : 'Suppliers you buy from \u2014 what you owe and how old it is';
 
   goTab(R.tabs.indexOf(ui.tab)>=0?ui.tab:R.tabs[0]);
@@ -1415,7 +1476,8 @@ function renderBalance(){
 function renderLedger(){
   var sel=$('#ledParty');
   sel.innerHTML=state.parties.map(function(p){
-    return '<option value="'+p.id+'"'+(p.id===ui.ledParty?' selected':'')+'>'+esc(p.name)+'</option>'}).join('');
+    return '<option value="'+p.id+'"'+(p.id===ui.ledParty?' selected':'')+'>'+esc(p.name)+
+      (p.archived?' (archived)':'')+'</option>'}).join('');
   var p=partyById(ui.ledParty);
   if(!p){ $('#ledBody').innerHTML='<tr><td colspan="8"><div class="empty">Add a supplier first.</div></td></tr>';
     $('#ledHead').innerHTML=''; return }
@@ -1424,7 +1486,10 @@ function renderLedger(){
   var a=ageing(p,f,on);          // summary and tags follow the as-on date
   var yr=ageing(p,f,hi);         // table footer covers the whole year
   $('#ledCap').textContent=p.name+'  \u00b7  FY '+f;
-  $('#ledHead').innerHTML='<div class="aging"><div class="hd">'+
+  var lockBanner = fyLocked(f)
+    ? '<p class="flag bad">FY '+f+' is locked. Entries for this year cannot be added, edited or deleted '+
+      'until the owner unlocks it on the Data tab.</p>' : '';
+  $('#ledHead').innerHTML=lockBanner+'<div class="aging"><div class="hd">'+
     '<div><div class="lbl">You owe as on '+dmy(on)+'</div><div class="big'+(a.bal>EPS?'':' ok')+'">\u20B9 '+
     num(Math.abs(a.bal))+(a.bal<-EPS?' advance':'')+'</div></div>'+
     '<div style="text-align:right"><div class="lbl">Oldest unpaid bill</div><div class="big'+(a.days===null?' ok':'')+'">'+
@@ -1447,14 +1512,17 @@ function renderLedger(){
             : st==='part'?'<span class="tag o2">part paid</span>'
             : st==='open'?'<span class="tag o4">unpaid</span>':'';
     var blank=function(v){return v?'':' blank'};
+    var hist = (e.history&&e.history.length)
+      ? ' <button class="tag o2" data-hist="'+e.id+'" style="border:0;cursor:pointer;font:inherit">edited \u00d7'+e.history.length+'</button>'
+      : '';
     html+='<tr><td class="soft2">'+dmy(e.date)+'</td>'+
-      '<th>'+TYPES[e.type].label+(e.note?' <span class="soft2">\u00b7 '+esc(e.note)+'</span>':'')+'</th>'+
+      '<th>'+TYPES[e.type].label+(e.note?' <span class="soft2">\u00b7 '+esc(e.note)+'</span>':'')+hist+'</th>'+
       '<td data-label="Bill / ref" class="soft2'+blank(e.ref)+'" style="text-align:left">'+esc(e.ref||'')+'</td>'+
       '<td data-label="Adds" class="addcol'+blank(s>0)+'">'+(s>0?fmt(e.amount):'')+'</td>'+
       '<td data-label="Clears" class="cutcol'+blank(s<0)+'">'+(s<0?fmt(e.amount):'')+'</td>'+
       '<td data-label="Balance">'+fmt(run)+'</td>'+
       '<td data-label="Status" class="'+(tag?'':'blank')+'">'+tag+'</td>'+
-      '<td data-label="" style="text-align:right"><button class="btn small ghost" data-rm="'+e.id+'">Delete</button></td></tr>';
+      '<td data-label="">'+(readOnly()?'':'<button class="btn small ghost" data-rm="'+e.id+'" style="float:right">Delete</button>')+'</td></tr>';
   });
   html+='<tr class="sum"><th colspan="3">Closing balance '+dmy(hi)+'</th>'+
     '<td data-label="Adds" class="addcol">'+fmt(yr.pur+yr.cr)+
@@ -1474,6 +1542,13 @@ function renderLedger(){
 }
 
 /* ---------- register ---------- */
+/* A minimal edit history: who changed an amount, from what, to what, when.
+   Capped so it cannot grow without bound. */
+function logEdit(e,newAmt){
+  e.history=e.history||[];
+  e.history.push({t:now(),by:role,from:e.amount,to:newAmt});
+  if(e.history.length>10) e.history=e.history.slice(-10);
+}
 function cellEntries(date,pid,type){
   return state.entries.filter(function(e){
     return e.date===date&&e.partyId===pid&&e.type===type})}
@@ -1481,17 +1556,23 @@ function renderRegister(){
   $('#regMonthWrap').hidden = (ui.regView==='day');
   $('#regDayList').hidden   = (ui.regView!=='day');
   $('#regDayWrap').hidden   = (ui.regView!=='day');
+  var lockNote=$('#regLock');
+  if(lockNote) lockNote.innerHTML = fyLocked(ui.fy)
+    ? '<p class="flag bad">FY '+ui.fy+' is locked. Nothing can be added or changed here until the owner unlocks it on the Data tab.</p>' : '';
   if(ui.regView==='day'){ renderDayEntry(); return }
   var ym=ui.regMonth, type=ui.regType;
-  if(!state.parties.length){
-    $('#regGrid').innerHTML='<tbody><tr><td><div class="empty">Add a supplier first.</div></td></tr></tbody>';return}
+  var activeP=state.parties.filter(function(p){return !p.archived});
+  if(!activeP.length){
+    $('#regGrid').innerHTML='<tbody><tr><td><div class="empty">'+
+      (state.parties.length?'All your suppliers are archived. Unarchive one on the Parties tab to enter data for it.'
+                            :'Add a supplier first.')+'</div></td></tr></tbody>';return}
   var dates=[];
   for(var d=1;d<=mDays(ym);d++) dates.push(ym+'-'+String(d).padStart(2,'0'));
   var head='<thead><tr><th>'+TYPES[type].label+'</th>'+dates.map(function(ds){
     return '<th class="'+(new Date(ds).getDay()===0?'sun':'')+'">'+Number(ds.slice(8))+'</th>'}).join('')+
     '<th class="tot">Total</th></tr></thead>';
   var col=dates.map(function(){return 0}), grand=0, body='<tbody>';
-  state.parties.forEach(function(p){
+  activeP.forEach(function(p){
     var rt=0, tds='';
     dates.forEach(function(ds,i){
       var es=cellEntries(ds,p.id,type);
@@ -1500,8 +1581,8 @@ function renderRegister(){
       tds+='<td class="'+(ds===today?'today':'')+'">'+
         (es.length>1
           ? '<button class="multi" data-open="'+p.id+'" data-date="'+ds+'">'+cell(v)+' \u00d7'+es.length+'</button>'
-          : '<input inputmode="decimal" data-date="'+ds+'" data-party="'+p.id+'" class="'+(v?'filled':'')+
-            '" value="'+cell(v)+'" aria-label="'+esc(p.name)+' '+ds+'">')+'</td>';
+          : '<input inputmode="decimal" data-date="'+ds+'" data-party="'+p.id+'"'+(readOnly()?' readonly':'')+
+            ' class="'+(v?'filled':'')+'" value="'+cell(v)+'" aria-label="'+esc(p.name)+' '+ds+'">')+'</td>';
     });
     grand+=rt;
     body+='<tr><th>'+esc(p.name)+'</th>'+tds+'<td class="tot">'+cell(rt)+'</td></tr>';
@@ -1516,16 +1597,20 @@ function renderRegister(){
 function renderDayEntry(){
   var date=ui.regDay||ui.day, type=ui.regType;
   $('#regDay').value=date;
-  if(!state.parties.length){
-    $('#regDayList').innerHTML='<div class="empty">Add a supplier first.</div>'; return }
+  var activeP=state.parties.filter(function(p){return !p.archived});
+  if(!activeP.length){
+    $('#regDayList').innerHTML='<div class="empty">'+
+      (state.parties.length?'All your suppliers are archived. Unarchive one on the Parties tab to enter data for it.'
+                            :'Add a supplier first.')+'</div>'; return }
   var total=0;
-  var html=state.parties.map(function(p){
+  var html=activeP.map(function(p){
     var es=cellEntries(date,p.id,type);
     var v=es.reduce(function(a,e){return a+e.amount},0);
     total+=v;
     var right = es.length>1
       ? '<button class="many" data-open="'+p.id+'" data-date="'+date+'">'+cell(v)+' \u00d7'+es.length+'</button>'
-      : '<input inputmode="decimal" data-date="'+date+'" data-party="'+p.id+'" value="'+cell(v)+
+      : '<input inputmode="decimal" data-date="'+date+'" data-party="'+p.id+'"'+(readOnly()?' readonly':'')+
+        ' value="'+cell(v)+
         '" placeholder="0" aria-label="'+esc(p.name)+' '+TYPES[type].label+'">';
     var owed=ageing(p,ui.fy,date).bal;
     return '<div class="dayrow"><div class="nm">'+esc(p.name)+
@@ -1582,13 +1667,18 @@ function renderParties(){
   $('#partiesBody').innerHTML=list.map(function(r){
     var n=state.entries.filter(function(e){
       return e.partyId===r.p.id&&e.date>=lo&&e.date<=hi}).length;
-    return '<tr><th class="party">'+esc(r.p.name)+'</th>'+
-      '<td data-label="Opening"><input type="number" step="0.01" value="'+r.o+'" data-op="'+r.p.id+
-      '" style="width:100%;max-width:150px;text-align:right" aria-label="'+esc(r.p.name)+' opening"></td>'+
+    var everHad=state.entries.some(function(e){return e.partyId===r.p.id});
+    var actionLabel = r.p.archived ? 'Unarchive' : (everHad ? 'Archive' : 'Remove');
+    var actionCls = r.p.archived ? 'gold' : 'ghost';
+    return '<tr'+(r.p.archived?' style="opacity:.6"':'')+'><th class="party">'+esc(r.p.name)+
+      (r.p.archived?' <span class="tag o2">archived</span>':'')+'</th>'+
+      '<td data-label="Opening"><input type="number" step="0.01" value="'+r.o+'" data-op="'+r.p.id+'"'+
+      (readOnly()?' readonly':'')+' style="width:100%;max-width:150px;text-align:right" aria-label="'+esc(r.p.name)+' opening"></td>'+
       '<td data-label="Closing" class="'+(r.bal>EPS?'due':r.bal<-EPS?'adv':'zero')+'">'+fmt(r.bal)+'</td>'+
       '<td data-label="Entries" class="soft2">'+n+'</td>'+
       '<td data-label="Oldest unpaid" class="soft2">'+(r.days===null?'\u2013':r.days+' d')+'</td>'+
-      '<td data-label="" style="text-align:right"><button class="btn ghost small" data-del="'+r.p.id+'">Remove</button></td></tr>';
+      '<td data-label="">'+(readOnly()?'':'<button class="btn '+actionCls+' small" data-del="'+r.p.id+
+      '" style="float:right">'+actionLabel+'</button>')+'</td></tr>';
   }).join('');
 }
 
@@ -1601,14 +1691,19 @@ function renderData(){
     var pur=rows.reduce(function(a,r){return a+r.pur+r.cr},0);
     var pay=rows.reduce(function(a,r){return a+r.pay+r.dr},0);
     var bal=rows.reduce(function(a,r){return a+r.bal},0);
+    var lk=fyLocked(f);
+    var lockCell = readOnly()
+      ? '<span class="tag '+(lk?'o4':'o1')+'">'+(lk?'locked':'open')+'</span>'
+      : '<button class="btn small '+(lk?'gold':'ghost')+'" data-lockfy="'+f+'">'+(lk?'Unlock':'Lock')+'</button>';
     return '<tr'+(f===ui.fy?' style="font-weight:600"':'')+'><th>'+f+(f===ui.fy?' \u2039 open':'')+'</th>'+
       '<td data-label="Purchase">'+fmt(pur)+'</td><td data-label="Payment">'+fmt(pay)+
       '</td><td data-label="Entries" class="soft2">'+(n||'\u2013')+'</td>'+
-      '<td data-label="Closing" class="'+(bal>EPS?'due':bal<-EPS?'adv':'zero')+'">'+fmt(bal)+'</td></tr>';
+      '<td data-label="Closing" class="'+(bal>EPS?'due':bal<-EPS?'adv':'zero')+'">'+fmt(bal)+'</td>'+
+      '<td data-label="Locked">'+lockCell+'</td></tr>';
   }).join('');
   $('#buildNote').innerHTML='Build <b>'+BUILD+'</b>. If a feature described to you is missing '+
     'here, this is an older copy \u2014 replace index.html with the newest one. '+
-    'Cloud sync arrived in build 9, locking on exit in build 10, the phone layout in build 11, dark mode and undo in build 12.';
+    'Cloud sync arrived in build 9, auto sign-out on exit in build 10, the phone layout in build 11, undo in build 12, sync baked in from build 14, mobile text fix in build 15, no more flash of stale figures on a new device in build 16, edit history and financial-year locking in build 17.';
   var parts=Object.keys(TYPES).map(function(t){
     return state.entries.filter(function(e){return e.type===t}).length+' '+TYPES[t].label.toLowerCase()});
   $('#dataNote').textContent=state.parties.length+' suppliers, '+state.entries.length+
@@ -1749,11 +1844,11 @@ function exportXlsx(){
   rows.forEach(function(r){var b=r.buckets;
     age.push([r.p.name,b[0],b[1],b[2],b[3],b[0]+b[1]+b[2]+b[3],r.advance])});
 
-  var tx=[['Date','Financial year','Party','Type','Bill / ref','Remark','Amount','Entered by']];
+  var tx=[['Date','Financial year','Party','Type','Bill / ref','Remark','Amount','Entered by','Times edited']];
   state.entries.slice().sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:a.id-b.id})
     .forEach(function(e){var p=partyById(e.partyId);
       tx.push([{d:e.date},fyOf(e.date),p?p.name:'?',TYPES[e.type].label,
-        e.ref||'',e.note||'',e.amount,e.by||''])});
+        e.ref||'',e.note||'',e.amount,e.by||'',(e.history&&e.history.length)||0])});
 
   var opn=[['Party'].concat(FY_LIST)];
   state.parties.forEach(function(p){
@@ -1969,16 +2064,20 @@ function bind(){
   $('#saveNow').addEventListener('click',function(){doSave(true); cloudPush()});
 
   var c0=cfgGet();
+  var raw0=null; try{ raw0=JSON.parse(localStorage.getItem('creditors:cloud')||'null') }catch(e){}
+  var usingDefault = c0 && !(raw0&&raw0.apiKey);   // no per-device override saved
   if(c0){
     $('#cfgKey').value=c0.apiKey||''; $('#cfgUrl').value=c0.databaseURL||'';
     $('#cfgProj').value=c0.projectId||''; $('#cfgDom').value=c0.authDomain||'';
     $('#cfgLedger').value=c0.ledger||'main';
     if(c0.region) $('#cfgRegion').value=c0.region;
-
-    cloudSet(cloud.state==='live'?'live':'off',
-      cloud.state==='live'?'Connected as '+(cloud.user&&cloud.user.email):'Set up, not connected');
+    if(usingDefault) msg('#cfgMsg','This copy of the app is already set up to sync \u2014 '+
+      'nothing to do here unless you want to point it at a different ledger.','');
   }
+  cloudSet(cloud.state==='live'?'live':(c0?'connecting':'off'),
+    cloud.state==='live'?'Synced \u00b7 '+stamp():(c0?'Connecting\u2026':'Not connected'));
   $('#cfgSave').addEventListener('click',function(){
+    if(readOnly()) return;
     var region=$('#cfgRegion').value;
     var inst=instFrom($('#cfgUrl').value);
     var url = (region==='auto') ? null : normUrl($('#cfgUrl').value,region);
@@ -2013,19 +2112,26 @@ function bind(){
     });
   });
   $('#cfgOff').addEventListener('click',function(){
-    if(!confirm('Turn off cloud sync on this device?\n\nThe records already on this device stay. Sign-in goes back to the PIN.')) return;
-    cloudOff(); cfgPut(null);
-    ['#cfgKey','#cfgUrl','#cfgProj','#cfgDom'].forEach(function(x){$(x).value=''});
+    if(readOnly()) return;
+    if(!confirm('Turn off cloud sync on THIS device?\n\nThe records already here stay. This device stops syncing '+
+      'until you turn it back on \u2014 other devices are not affected.')) return;
+    cloudOff(); cfgPut(null);           // stores an explicit off-marker, overriding the baked-in default
+    cloudSet('off','Turned off on this device');
     msg('#cfgMsg','Cloud sync turned off on this device.','ok');
   });
   var qt=null;
   function applyCell(i){
+    if(readOnly()) return;
     var r=parseAmount(i.value);
     if(!r.ok){ alert(r.msg); renderRegister(); return }
     if(ROLES[role].types.indexOf(ui.regType)<0){ renderRegister(); return }
     var d=i.dataset.date, pid=Number(i.dataset.party), es=cellEntries(d,pid,ui.regType);
+    if(dateLocked(d)){ refuseLock(fyOf(d)); renderRegister(); return }
     if(r.v){
-      if(es.length){ es[0].amount=r.v; es[0].by=role; touchE(es[0]) }
+      if(es.length){
+        if(Math.abs(es[0].amount-r.v)>EPS) logEdit(es[0],r.v);
+        es[0].amount=r.v; es[0].by=role; touchE(es[0]);
+      }
       else state.entries.push(touchE({id:newId(),date:d,partyId:pid,type:ui.regType,
         amount:r.v,ref:'',note:'',by:role}));
     }else if(es.length){
@@ -2054,10 +2160,26 @@ function bind(){
     ui.ledParty=Number(b.dataset.party); goTab('ledger');
   });
   $('#ledBody').addEventListener('click',function(e){
+    if(readOnly()&&e.target.closest('button[data-rm]')) return;
+    var hb=e.target.closest('button[data-hist]');
+    if(hb){
+      var he=null; state.entries.forEach(function(en){if(en.id===Number(hb.dataset.hist))he=en});
+      if(he&&he.history){
+        var lines=he.history.map(function(h){
+          var dt=new Date(h.t); var when=dt.toLocaleDateString('en-IN')+' '+
+            dt.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'});
+          var who=(ROLES[h.by]&&ROLES[h.by].label)||h.by||'?';
+          return when+'  '+who+':  '+num(h.from)+' \u2192 '+num(h.to);
+        });
+        alert('Edit history\n\n'+lines.join('\n'));
+      }
+      return;
+    }
     var b=e.target.closest('button[data-rm]'); if(!b)return;
     var id=Number(b.dataset.rm);
     var x=null; state.entries.forEach(function(en){if(en.id===id)x=en});
     if(!x)return;
+    if(dateLocked(x.date)){ refuseLock(fyOf(x.date)); return }
     var xp=partyById(x.partyId);
     var at=state.entries.indexOf(x);
     var tk='e'+x.id, hadTomb=(state.tomb||{})[tk];
@@ -2073,6 +2195,7 @@ function bind(){
   });
 
   $('#txAdd').addEventListener('click',function(){
+    if(readOnly()) return;
     var p=partyById(ui.ledParty);
     if(!p){msg('#txMsg','Add a supplier first.','err');return}
     var d=$('#txDate').value;
@@ -2081,6 +2204,7 @@ function bind(){
     var r=parseAmount($('#txAmt').value);
     if(!r.ok){msg('#txMsg',r.msg,'err');return}
     if(!r.v){msg('#txMsg','Enter an amount greater than zero.','err');return}
+    if(dateLocked(d)){ msg('#txMsg','FY '+fyOf(d)+' is locked. Ask the owner to unlock it first.','err'); return }
     var t=$('#txType').value;
     if(d>today && !confirm('That date is in the future. Add it anyway?')) return;
     var dup=state.entries.filter(function(e){
@@ -2096,29 +2220,45 @@ function bind(){
   });
 
   $('#partiesBody').addEventListener('change',function(e){
+    if(readOnly()) return;
     var i=e.target.closest('input[data-op]'); if(!i)return;
     var p=partyById(Number(i.dataset.op)); if(!p)return;
     var n=Number(i.value);
     if(!isFinite(n)){alert('Opening balance must be a number.'); renderParties(); return}
+    if(fyLocked(ui.fy)){ refuseLock(ui.fy); renderParties(); return }
     p.openings=p.openings||{}; p.openings[ui.fy]=Math.round(n*100)/100; touchP(p);
     queueSave(); renderParties();
   });
   $('#partiesBody').addEventListener('click',function(e){
+    if(readOnly()) return;
     var b=e.target.closest('button[data-del]'); if(!b)return;
     var id=Number(b.dataset.del), p=partyById(id);
     var n=state.entries.filter(function(x){return x.partyId===id}).length;
-    if(!confirm('Remove '+p.name+' and its '+n+' entries across all years?\n\nDownload a backup first if you are unsure.')) return;
+
+    if(p.archived){
+      p.archived=false; touchP(p); queueSave(); renderParties();
+      toast(p.name+' is active again.','ok');
+      return;
+    }
+    if(n>0){
+      if(!confirm('Archive '+p.name+'?\n\nIts full ledger, balance and history stay exactly as they are '+
+        'everywhere \u2014 Balance, reports, Excel. It just stops appearing in the Register and Daily entry '+
+        'screens, so you do not scroll past a supplier you no longer buy from. You can bring it back anytime.')) return;
+      p.archived=true; touchP(p); queueSave(); renderParties();
+      toast(p.name+' archived.','ok');
+      return;
+    }
+    if(!confirm('Remove '+p.name+' permanently? It has no transactions in any year, so nothing is lost.')) return;
     killRec('parties',id);
-    state.entries.filter(function(x){return x.partyId===id})
-      .forEach(function(x){killRec('entries',x.id)});
     state.parties=state.parties.filter(function(x){return x.id!==id});
-    state.entries=state.entries.filter(function(x){return x.partyId!==id});
     if(ui.ledParty===id) ui.ledParty=state.parties.length?state.parties[0].id:null;
     queueSave(); renderParties();
     var back=$('#partySearch'); if(back&&back.focus) back.focus();
   });
   $('#addParty').addEventListener('click',function(){
+    if(readOnly()) return;
     var name=$('#newName').value.trim();
+    if(fyLocked(ui.fy)){ msg('#addMsg','FY '+ui.fy+' is locked. Unlock it on this tab before adding a supplier.','err'); return }
     if(!name){msg('#addMsg','Enter a name.','err'); $('#newName').focus(); return}
     if(state.parties.some(function(p){return p.name.toLowerCase()===name.toLowerCase()})){
       msg('#addMsg',name+' is already on the list.','err'); return}
@@ -2131,9 +2271,11 @@ function bind(){
     queueSave(); renderParties();
   });
   $('#carry').addEventListener('click',function(){
+    if(readOnly()) return;
     var i=FY_LIST.indexOf(ui.fy);
     if(i===FY_LIST.length-1){msg('#carryMsg',ui.fy+' is the last year in the list.','err');return}
     var nx=FY_LIST[i+1];
+    if(fyLocked(nx)){ msg('#carryMsg','FY '+nx+' is locked. Unlock it first.','err'); return }
     var rows=allRows(fyEnd(ui.fy),ui.fy);
     var prev=rows.filter(function(r){return op(r.p,nx)}).length;
     if(!confirm('Set every opening balance for '+nx+' from the closing balance of '+ui.fy+'?'+
@@ -2143,6 +2285,24 @@ function bind(){
     queueSave(); msg('#carryMsg','Opening balances for '+nx+' updated from '+ui.fy+'.','ok'); renderParties();
   });
 
+  $('#yearsBody').addEventListener('click',function(e){
+    if(readOnly()) return;
+    var b=e.target.closest('button[data-lockfy]'); if(!b)return;
+    var f=b.dataset.lockfy;
+    state.lockedYears=state.lockedYears||{};
+    if(fyLocked(f)){
+      if(!confirm('Unlock FY '+f+'?\n\nThis allows purchases, payments and opening balances for that year to be changed again.')) return;
+      delete state.lockedYears[f];
+      toast('FY '+f+' unlocked.','ok');
+    }else{
+      if(!confirm('Lock FY '+f+'?\n\nNo purchases, payments, notes or opening balances can be added or changed for that '+
+        'year on this device until you unlock it again.\n\nNote: a different device that has not yet heard about this '+
+        'lock could still add an entry to '+f+' before it reconnects and finds out.')) return;
+      state.lockedYears[f]=now();
+      toast('FY '+f+' locked.','ok');
+    }
+    queueSave(); renderData(); renderRegister(); renderLedger();
+  });
   $('#xlDown').addEventListener('click',exportXlsx);
   $('#lockWhen').innerHTML=LOCKS.map(function(L){
     return '<option value="'+L[0]+'"'+(L[0]===lockDelay()?' selected':'')+'>'+L[1]+'</option>'}).join('');
@@ -2154,14 +2314,16 @@ function bind(){
       :'The app now locks after '+(state.lockDelay/1000)+' seconds away.'),'ok');
   });
   $('#pinSave').addEventListener('click',function(){
+    if(readOnly()) return;
     var who=$('#pinWho').value, a=$('#pinNew').value.trim(), b=$('#pinNew2').value.trim();
     if(!/^\d{4,12}$/.test(a)){msg('#pinMsg','Use 4 to 12 digits.','err');return}
     if(a!==b){msg('#pinMsg','The two PINs do not match.','err');return}
-    if(who==='entry'&&pinHash(a)===pins().admin){msg('#pinMsg','That is already the owner PIN.','err');return}
-    if(who==='admin'&&pinHash(a)===pins().entry){msg('#pinMsg','That is already the data-entry PIN.','err');return}
+    var others=['admin','entry','viewer'].filter(function(x){return x!==who});
+    var clash=others.some(function(x){return pinHash(a)===pins()[x]});
+    if(clash){msg('#pinMsg','That PIN is already used by another role. Pick a different one.','err');return}
     pins()[who]=pinHash(a);
     $('#pinNew').value=''; $('#pinNew2').value='';
-    msg('#pinMsg',(who==='admin'?'Owner':'Data entry')+' PIN updated.','ok');
+    msg('#pinMsg',ROLES[who].label+' PIN updated.','ok');
     queueSave();
   });
   $('#expYear').addEventListener('click',function(){exportCsv(false)});
@@ -2172,7 +2334,7 @@ function bind(){
       'application/json','creditors-backup-'+today+'.json');
     msg('#bkMsg','Backup downloaded. Keep it somewhere safe.','ok');
   });
-  $('#bkUpBtn').addEventListener('click',function(){$('#bkUp').click()});
+  $('#bkUpBtn').addEventListener('click',function(){ if(!readOnly()) $('#bkUp').click() });
   $('#bkUp').addEventListener('change',function(e){
     var f=e.target.files&&e.target.files[0]; if(!f)return;
     var rd=new FileReader();
@@ -2196,6 +2358,7 @@ function bind(){
     rd.readAsText(f); e.target.value='';
   });
   $('#resetAll').addEventListener('click',function(){
+    if(readOnly()) return;
     if(!confirm('This wipes your changes and reloads the original spreadsheet data.\n\nDownload a backup first if you need one. Continue?')) return;
     if(prompt('Type RESET to confirm.')!=='RESET'){msg('#resetMsg','Reset cancelled.','');return}
     download(JSON.stringify({app:'creditors',version:3,saved:new Date().toISOString(),
